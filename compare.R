@@ -31,3 +31,6 @@ compare<-function (forams.sample) {
     unitestfun(spec,aze.species,lookup.species)    
   }
 }
+
+## example
+# sample.names<-sapply(as.character(forams.bfd[,1]),compare,USE.NAMES=FALSE)
