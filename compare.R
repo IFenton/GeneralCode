@@ -6,12 +6,13 @@
 ## output - corrected version of that name if unknown
 
 compare<-function (forams.sample) {
+  # load lookup tables
   forams.tracey<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/traceystax.csv")
   aze.species<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/Traceysspecies.csv")
   forams.lookup<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/foramslookup.csv")
   lookup.species<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/lookupwodup.csv")
   
-  
+  # create the matching function
   unitestfun<-function (sample,forams,lookup) {
     if (is.na(match(sample,forams$Species)) == FALSE) {
       return(as.vector(forams$Full[match(sample,forams$Species)]))
@@ -23,6 +24,9 @@ compare<-function (forams.sample) {
       }
     }
   }
+  
+  # run that function
+  forams.sample <- as.character(forams.sample) ## added this line
   split<- strsplit (forams.sample," ") [[1]] [2]
   spec<- strsplit (forams.sample," ") [[1]] [1]
   if (is.na(split) == FALSE) {
