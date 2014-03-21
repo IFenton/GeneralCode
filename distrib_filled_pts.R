@@ -1,8 +1,15 @@
-## distrib.filled.pts
-## distrib.filled with the capability to add points
-## 09 / 01 / 2014
-## work for Andy
+## Created 09 / 01 / 2014
+## Isabel Fenton (work for Andy)
+##
+## adding points to the distrib.filled maps
+##
+## function:
+## filled.points 
+## distrib.filled.pts - distrib.filled with the capability to add points
 
+source("C:\\Documents\\Science\\PhD\\Code\\maps.R")
+
+# distrib.filled.pts ------------------------------------------------------
 distrib.filled.pts <- function (xc, yc, colc, x1, y1, palette = "log.heat", pal.cutoff = 0.1, 
                             pal.col.main = "grey", pal.col.back = "white", key = TRUE, shift = FALSE,
                             maintitle = "", subtitle = "", keytitle = "", key.cex = 0.9, 
@@ -191,5 +198,94 @@ distrib.filled.pts <- function (xc, yc, colc, x1, y1, palette = "log.heat", pal.
     }
   }
   par(mar = c(5.1,4.1,4.1,2.1))
+}
+
+## filled.points -----------------------------------------------------------
+# filled contour plus points
+filled.points <- function (x = seq(0, 1, length.out = nrow(z)), y = seq(0, 1, length.out = ncol(z)), z,
+                           x.points, y.points, y.points.lab = "", set.layout = T,
+                           xlim = range(x, finite = TRUE), ylim = range(y, finite = TRUE), zlim = range(z, finite = TRUE),
+                           levels = pretty(zlim, nlevels), nlevels = 20, color.palette = cm.colors, 
+                           col = color.palette(length(levels) - 1), plot.title, plot.axes, 
+                           key.title, key.axes, asp = NA, xaxs = "i", yaxs = "i", las = 1, 
+                           axes = TRUE, frame.plot = axes, ...) 
+{
+  if (missing(z)) {
+    if (!missing(x)) {
+      if (is.list(x)) {
+        z <- x$z
+        y <- x$y
+        x <- x$x
+      }
+      else {
+        z <- x
+        x <- seq.int(0, 1, length.out = nrow(z))
+      }
+    }
+    else stop("no 'z' matrix specified")
+  }
+  else if (is.list(x)) {
+    y <- x$y
+    x <- x$x
+  }
+  if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
+    stop("increasing 'x' and 'y' values expected")
+  mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
+  on.exit(par(par.orig))
+  if(set.layout)
+  {
+    w <- (3 + mar.orig[2L]) * par("csi") * 2.54
+    layout(matrix(c(2, 1), ncol = 2L), widths = c(1, lcm(w)))
+  }
+  par(las = las)
+  mar <- mar.orig
+  mar[4L] <- mar[2L]
+  mar[2L] <- 1
+  par(mar = mar)
+  plot.new()
+  plot.window(xlim = c(0, 1), ylim = range(levels), xaxs = "i", 
+              yaxs = "i")
+  
+  # remove the boxes along the key
+  rect(0, levels[-length(levels)], 1, levels[-1L], col = col, border = NA)
+  
+  if (missing(key.axes)) {
+    if (axes) 
+      axis(4)
+  }
+  else key.axes
+  box()
+  if (!missing(key.title)) 
+    key.title
+  mar <- mar.orig
+  mar[4L] <- mar[4L] + 1
+  par(mar = mar)
+  plot.new()
+  plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+  if (!is.matrix(z) || nrow(z) <= 1L || ncol(z) <= 1L) 
+    stop("no proper 'z' matrix specified")
+  if (!is.double(z)) 
+    storage.mode(z) <- "double"
+  .filled.contour(as.double(x), as.double(y), z, as.double(levels), 
+                  col = col)
+  if (missing(plot.axes)) {
+    if (axes) {
+      title(main = "", xlab = "", ylab = "")
+      Axis(x, side = 1)
+      Axis(y, side = 2)
+    }
+  }
+  else plot.axes
+  if (frame.plot) 
+    box()
+  if (missing(plot.title)) 
+    title(...)
+  else plot.title
+  # add more points
+  par(new = T)
+  plot(x.points, y.points, bty = "n", axes = F, ylab = "", xlab = "", pch = 20)
+  axis(4, las = 1)
+  mtext(side = 4, line = 2.5, y.points.lab, las = 0)
+  invisible()
 }
 
