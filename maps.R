@@ -16,6 +16,7 @@
 
 library(fields)
 library(akima)
+data(world.dat)
 
 # world.oceancol ----------------------------------------------------------
 ## world ocean, with the ability to colour the ocean
