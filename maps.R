@@ -499,7 +499,7 @@ distrib.filled <- function (x, key = TRUE, palette = "log.heat", shift = FALSE, 
         
         world.oceancol.contour(world.dat, col.land = "green4", col.water = "steelblue2")
         
-        world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+        #world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
         
         par(mai = c(1, 0.25, 1, 0.85))
         
