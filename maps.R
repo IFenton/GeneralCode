@@ -22,7 +22,9 @@ data(world.dat)
 ## world ocean, with the ability to colour the ocean
 world.oceancol<-function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
                           col.land = "darkgrey", zones = FALSE, ...)
-{
+{ library(fields)
+  data(world.dat)
+  
   land <- TRUE
   lakes <- TRUE
   ind <- (1:length(obj$x))[is.na(obj$x)]
@@ -60,7 +62,9 @@ world.oceancol<-function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water
 # world.oceancol.contour --------------------------------------------------
 world.oceancol.contour <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
                                   col.land = "darkgrey", ...)
-{
+{ library(fields)
+  data(world.dat)
+   
   land <- TRUE
   lakes <- TRUE
   ind <- (1:length(obj$x))[is.na(obj$x)]
@@ -92,7 +96,9 @@ world.oceancol.contour <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90),
 # create an colour function for the shifted world map
 world.shiftcol <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "white",
                           col.land = "darkgrey", zones = FALSE, ...)
-{
+{ library(fields)
+  data(world.dat)
+  
   # add 360 to those points to the west of the meridian
   worldshift.x <- world.dat$x
   worldshift.y <- world.dat$y
@@ -153,7 +159,9 @@ world.shiftcol <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "wh
 # create an colour function for the shifted world map with a contour
 world.shiftcol.contour <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "white",
                                   col.land = "darkgrey", zones = FALSE, ...)
-{
+{ library(fields)
+  data(world.dat)
+  
   # add 360 to those points to the west of the meridian
   worldshift.x <- world.dat$x
   worldshift.y <- world.dat$y
@@ -448,7 +456,8 @@ distrib.filled <- function (x, key = TRUE, palette = "log.heat", shift = FALSE, 
                             ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                             xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                             col.water = "steelblue2", col.land = "green4", alpha = NA, nlevels = 20, ...)
-{ 
+{ library(akima) # needed for the interp function
+  
   if (is.list(x)) {
     color <- x$z
     y <- x$y
