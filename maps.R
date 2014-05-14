@@ -451,7 +451,7 @@ par(mar = c(5.1, 4.1, 4.1, 2.1))
 
 # distrib.filled ----------------------------------------------------------
 # distrib.filled
-distrib.filled <- function (x, key = TRUE, palette = "log.heat", shift = FALSE, maintitle = "", 
+distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "log.heat", shift = FALSE, maintitle = "", 
                             subtitle = "", keytitle = "", key.cex = 0.9, sub.italics = FALSE, pch = 20, 
                             ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                             xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
@@ -463,7 +463,12 @@ distrib.filled <- function (x, key = TRUE, palette = "log.heat", shift = FALSE, 
     y <- x$y
     x <- x$x
   }
-  else stop("no 'z' matrix specified")
+  else {
+    x <- interp(x, y, color, duplicate = "mean")
+    color <- x$z
+    y <- x$y
+    x <- x$x
+  }
   
   
   zlim <- range(color, finite = TRUE)
