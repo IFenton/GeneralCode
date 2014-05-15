@@ -292,26 +292,26 @@ world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) {
     color <- color[-p]
   }
   if (palette == "log.heat") {
-    points(x, y, pch = pch, col = log.heat(max(color, na.rm = T))[color]) 
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1))
+    points(x, y, pch = pch, col = log.heat(max(color, na.rm = T))[color], ...) 
+    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
   }
   if (palette == "heat.colors") {
-    points(x, y, pch = pch, col = heat.colors(max(color, na.rm = T))[color])
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1))
+    points(x, y, pch = pch, col = heat.colors(max(color, na.rm = T))[color], ...)
+    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
   }
   if (palette == "rev.log.heat") {
-    points(x, y, pch = pch, col = rev.log.heat(max(color, na.rm = T))[color])
-    if (length(p) != 0) points(px, py, pch = pch ,col = hsv(1/6, 1, 1))
+    points(x, y, pch = pch, col = rev.log.heat(max(color, na.rm = T))[color], ...)
+    if (length(p) != 0) points(px, py, pch = pch ,col = hsv(1/6, 1, 1), ...)
   }
   if (palette == "water.colors") {
-    points(x, y, pch = pch, col = water.colors(max(color, na.rm = T))[color])
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1))
+    points(x, y, pch = pch, col = water.colors(max(color, na.rm = T))[color], ...)
+    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
   }
   if (palette == "rainbow") {
-    points(x, y, pch = pch, col = rainbow(max(color, na.rm = T))[color])
+    points(x, y, pch = pch, col = rainbow(max(color, na.rm = T))[color], ...)
   }
   if (palette == "none") {
-    points(x, y, pch = pch, col = as.integer(color))
+    points(x, y, pch = pch, col = as.integer(color), ...)
   }
   par(mai = c(1.02, 0.82, 0.82, 0.42))
   par(mar = c(5.1, 4.1, 4.1, 2.1))
