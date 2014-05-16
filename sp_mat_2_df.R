@@ -12,13 +12,12 @@ sp.mat.2.df <- function(x, y, sp.mat) {
   # create the initial data frame
   dat <- as.data.frame(cbind(rep(x, nrow(sp.mat)), rep(y, each = ncol(sp.mat))))
   names(dat) <- c("Long", "Lat")
+  dat$val <- NA
   
   # populate the new column
-  tmp <- NULL
   for (i in 1:ncol(sp.mat)){
-    tmp <- c(tmp, sp.mat[, i])
+    dat$val[seq(i, by = length(x), length.out = length(y))] <- as.numeric(sp.mat[, i])
   }
-  dat$val <- tmp
   return(dat)
 }
 
