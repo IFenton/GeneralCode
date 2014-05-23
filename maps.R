@@ -20,8 +20,8 @@ data(world.dat)
 
 # world.oceancol ----------------------------------------------------------
 ## world ocean, with the ability to colour the ocean
-world.oceancol<-function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
-                          col.land = "darkgrey", zones = FALSE, ...)
+world.oceancol <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
+                          col.land = "darkgrey", zones = FALSE, ...) 
 { library(fields)
   data(world.dat)
   
@@ -275,7 +275,8 @@ world.map <-  function (ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, zo
 
 # world.points ------------------------------------------------------------
 # create a world.points function that adds points to a world map
-world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) {
+world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) 
+{
   par(mai=c(0.2,0.3,0.5,0.3))
   if (sum(as.integer(color) != (color), na.rm = T) > 0 && !is.factor(color)) {
     a <- nchar(as.integer(max(color, na.rm = T)))
@@ -325,128 +326,132 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                          col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, ...)
 { if (shift) {
-  x <- ifelse(x < 0, x + 360, x)
-}
+    x <- ifelse(x < 0, x + 360, x)
+  }
 
-if (key) {
-  par(mfrow = c(2, 1))
-  # set up the layout for a key
-  layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
-  
-  # if factor
-  if (is.factor(color)) {
-    world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-              fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-              ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-              xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-    world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
+  # set up parameters so if an error occurs, still get correct parameters for next plot
+  opar <- par("mfrow", "mar", "mai")
+  on.exit(par(opar))
+
+  if (key) {
+    par(mfrow = c(2, 1))
     
-    par(mai = c(1, 0.25, 1, 0.85))
+    # set up the layout for a key
+    layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
     
-    plot.col <- length(levels(color))
-    nam.hist <- levels(color)
-    
-    axis.spacing <- c(0, 0.5, 0)
-    
-  } else {
-    # add the key
-    if (sum(as.integer(color) != (color), na.rm = T) > 0) {
-      # plot the world.map outline and add the points
+    # if factor
+    if (is.factor(color)) {
       world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                 ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                 xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-      world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+      world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
       
       par(mai = c(1, 0.25, 1, 0.85))
       
-      a <- nchar(as.integer(max(color, na.rm = T)))
+      plot.col <- length(levels(color))
+      nam.hist <- levels(color)
       
-      plot.col <- as.integer(max(color, na.rm = T) * 10^(4 - a) + 0.5)
-      
-      nam <- seq(max(color, na.rm = T) / plot.col, max(color, na.rm = T), length.out = plot.col)
-      plot.nam <- 1:plot.col
-      nam.hist <- rep(NA, length(nam))
-      
-      # difference between less than 5 and more than 5
-      if (round(plot.col, -nchar(plot.col)) != 0) {
-        spacing <- round(plot.col, -nchar(plot.col)) / 10
-      } else {
-        spacing <- 10^(nchar(plot.col)) / 25
-      }
-      nam.hist[which(plot.nam %% spacing == 0)] <- round(nam[which(plot.nam %% spacing == 0)], 3 - nchar(as.integer(max(nam, na.rm = T))))
-      nam.hist <- c(0, nam.hist)        
+      axis.spacing <- c(0, 0.5, 0)
       
     } else {
-      # plot the world.map outline and add the points
+      # add the key
+      if (sum(as.integer(color) != (color), na.rm = T) > 0) {
+        # plot the world.map outline and add the points
+        world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
+                  fill = fill, shift = shift, col.water = col.water, col.land = col.land,
+                  ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
+                  xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
+        world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+        
+        par(mai = c(1, 0.25, 1, 0.85))
+        
+        a <- nchar(as.integer(max(color, na.rm = T)))
+        
+        plot.col <- as.integer(max(color, na.rm = T) * 10^(4 - a) + 0.5)
+        
+        nam <- seq(max(color, na.rm = T) / plot.col, max(color, na.rm = T), length.out = plot.col)
+        plot.nam <- 1:plot.col
+        nam.hist <- rep(NA, length(nam))
+        
+        # difference between less than 5 and more than 5
+        if (round(plot.col, -nchar(plot.col)) != 0) {
+          spacing <- round(plot.col, -nchar(plot.col)) / 10
+        } else {
+          spacing <- 10^(nchar(plot.col)) / 25
+        }
+        nam.hist[which(plot.nam %% spacing == 0)] <- round(nam[which(plot.nam %% spacing == 0)], 3 - nchar(as.integer(max(nam, na.rm = T))))
+        nam.hist <- c(0, nam.hist)        
+        
+      } else {
+        # plot the world.map outline and add the points
+        world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
+                  fill = fill, shift = shift, col.water = col.water, col.land = col.land,
+                  ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
+                  xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
+        world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+        
+        par(mai = c(1, 0.25, 1, 0.85))      
+        plot.col <- max(color, na.rm = T)
+        
+        nam <- 1:plot.col
+        nam.hist <- rep(NA, length(nam))
+        
+        
+        if (round(plot.col, -nchar(plot.col)) != 0) {
+          spacing <- round(plot.col, -nchar(plot.col)) / 10
+        } else {
+          spacing <- 10^(nchar(plot.col)) / 20
+        }
+        nam.hist[which(nam %% spacing == 0)] <- nam[which(nam %% spacing == 0)]
+        if(min(color, na.rm = T) == 0) nam.hist <- c(0, nam.hist)
+      }
+      axis.spacing <- c(0, 1, 0)
+    }
+    key<-rep(1, plot.col)
+    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) key <- c(1, key)
+  
+    if (palette == "log.heat") {
+      bar.col <- log.heat(plot.col)
+      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
+    }
+    if (palette == "rev.log.heat") {
+      bar.col <- rev.log.heat(plot.col)
+      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
+    }
+    if (palette == "heat.colors") {
+      bar.col <- heat.colors(plot.col)
+      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
+    }
+    
+    if (palette == "water.colors") {
+      bar.col <- water.colors(plot.col)
+      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
+    }
+    if (palette == "rainbow") bar.col <- rainbow(plot.col)
+    if (palette == "none") bar.col <- 1:length(levels(color))
+    
+    barplot(key, names.arg = nam.hist, main = keytitle, horiz = TRUE, space = 0, border = NA, col = bar.col,
+            fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, cex.main = key.cex, font.main = 1)
+    
+    par(mai = c(1.02, 0.82, 0.82, 0.42))
+    par(mfrow = c(1, 1))
+    
+  } else {
+    if (is.factor(color)) {
+      world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
+                fill = fill, shift = shift, col.water = col.water, col.land = col.land,
+                ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
+                xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha,zones = zones, ...)
+      world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
+    } else {
       world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                 ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                 xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
       world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
-      
-      par(mai = c(1, 0.25, 1, 0.85))      
-      plot.col <- max(color, na.rm = T)
-      
-      nam <- 1:plot.col
-      nam.hist <- rep(NA, length(nam))
-      
-      
-      if (round(plot.col, -nchar(plot.col)) != 0) {
-        spacing <- round(plot.col, -nchar(plot.col)) / 10
-      } else {
-        spacing <- 10^(nchar(plot.col)) / 20
-      }
-      nam.hist[which(nam %% spacing == 0)] <- nam[which(nam %% spacing == 0)]
-      if(min(color, na.rm = T) == 0) nam.hist <- c(0, nam.hist)
     }
-    axis.spacing <- c(0, 1, 0)
   }
-  key<-rep(1, plot.col)
-  if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) key <- c(1, key)
-  
-  if (palette == "log.heat") {
-    bar.col <- log.heat(plot.col)
-    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
-  }
-  if (palette == "rev.log.heat") {
-    bar.col <- rev.log.heat(plot.col)
-    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-  }
-  if (palette == "heat.colors") {
-    bar.col <- heat.colors(plot.col)
-    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-  }
-  
-  if (palette == "water.colors") {
-    bar.col <- water.colors(plot.col)
-    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
-  }
-  if (palette == "rainbow") bar.col <- rainbow(plot.col)
-  if (palette == "none") bar.col <- 1:length(levels(color))
-  
-  barplot(key, names.arg = nam.hist, main = keytitle, horiz = TRUE, space = 0, border = NA, col = bar.col,
-          fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, cex.main = key.cex, font.main = 1)
-  
-  par(mai = c(1.02, 0.82, 0.82, 0.42))
-  par(mfrow = c(1, 1))
-  
-} else {
-  if (is.factor(color)) {
-    world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-              fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-              ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-              xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha,zones = zones, ...)
-    world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
-  } else {
-    world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-              fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-              ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-              xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-    world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
-  }
-}
-par(mar = c(5.1, 4.1, 4.1, 2.1))
 }
 
 # distrib.filled ----------------------------------------------------------
@@ -457,6 +462,10 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
                             xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                             col.water = "steelblue2", col.land = "green4", alpha = NA, nlevels = 20, ...)
 { library(akima) # needed for the interp function
+  
+  # set up parameters so if an error occurs, still get correct parameters for next plot
+  opar <- par("mfrow", "mar", "mai")
+  on.exit(par(opar))
   
   if (is.list(x)) {
     color <- x$z
@@ -605,5 +614,4 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
       world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
     }
   }
-  par(mar = c(5.1, 4.1, 4.1, 2.1))
 }
