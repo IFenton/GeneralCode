@@ -611,7 +611,10 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                 ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                 xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, ...)
-      world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+      .filled.contour(as.double(x), as.double(y), color, as.double(levels), 
+                      col = fill.col)
+      
+      world.oceancol.contour(world.dat, col.land = "green4", col.water = "steelblue2")
     }
   }
 }
