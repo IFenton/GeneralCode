@@ -7,6 +7,7 @@
 ## Functions: 
 ## model.evs - a function to get the list of variables from a model, including poly
 ## lr.calc - a function that calculates likelihood ratios for a set of variables
+## lr.plot - a function to plot the likelihood ratios / comparisons on barplots
 ##
 ## To do: Initially set to run with sarlm models
 ##        suspect this only works with one poly variable
@@ -139,6 +140,52 @@ lr.calc <- function(model, EVs = NULL) {
   }
   return(LRs)
 }
+
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.text = lr.mods, ...) {
+  # function to plot the likelihood ratios for up to four models
+  # input - likelihood ratios from lr.calc (up to four)
+  #       - order: a list of numbers for the order of the code
+  #       - plt: the plot parameter for the x-axis 
+  #       - leg.text: the words for the legend, otherwise defaults to the model names
+  # calculate number of comparisons
+  # create a list of the models
+  lr.mods <- c("lr.mod1", "lr.mod2", "lr.mod3", "lr.mod4")
+  # leave only those models that are actually there
+  for (i in 1:length(lr.mods)) {
+    tmp <- eval(parse(text = lr.mods[1]))
+  }
+  all.lr.mods <- 
+  # for each model, rename columns
+  for (i in 1:length(lr.mods2)) {
+    print(i)
+    names(lr.mods2[[i]])[2:4] <- paste(names(lr.mods[[i]])[2:4], names(lr.mods)[i], sep = ".")
+  }
+  all.lr.mods <- lr.mods[1]
+  if (length(lr.mods) > 1) {
+    for (i in 2:length(lr.mods)) {
+      all.lr.mods <- merge(lr.mods, lr.mods[i], all = TRUE)
+    }
+  }
+  # order the points
+  if (order) {
+    if (length(order) != nrow(all.lr.mods)) stop("Different lengths in order and lr dataframe")
+    all.lr.mods <- all.lr.mods[order.lr.ms,]
+  }
+    
+  # generate the data for the barplot
+  bar.lr.mods <- rbind(all.lr.mods[grep(names(all.lr.mods), "lr")])
+  
+  # plot the absolute coefficients
+  plt.def <- par("plt")
+  on.exit(par(plt.def))
+  par(plt = c(plt.def[1:2], plt, plt.def[4]))
+  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 10))
+  for (i in 1:length(lr.mods)) {
+    text(pts.x[i, ], all.lr.mods[grep(names(all.lr.mods), "lr")[i]] + 10, all.lr.mods[grep(names(all.lr.mods), "stars")[i]])
+  }
+  legend("topright", leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
+}
+
 
 # lr.calc(mod.sar.opf)
 # ms.lr
