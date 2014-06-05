@@ -57,7 +57,7 @@ lr.calc <- function(model, EVs = NULL) {
   # input  - model: the model to work from
   #        - EVs: dataframe of variables, and the groups they are in (optional, otherwise calculated from model)
   # output - dataframe containing variables, p values and significance stars
-
+  
   # obtain a list of variables
   if (is.null(EVs)) {
     # calculate the list of EVs
@@ -141,7 +141,7 @@ lr.calc <- function(model, EVs = NULL) {
   return(LRs)
 }
 
-lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.text = lr.mods, ...) {
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.loc = "topright", ...) {
   # function to plot the likelihood ratios for up to four models
   # input - likelihood ratios from lr.calc (up to four)
   #       - order: a list of numbers for the order of the code
@@ -150,40 +150,47 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   # calculate number of comparisons
   # create a list of the models
   lr.mods <- c("lr.mod1", "lr.mod2", "lr.mod3", "lr.mod4")
-  # leave only those models that are actually there
+  num.mod <- 0
+  # create the dataframe for analysis
   for (i in 1:length(lr.mods)) {
-    tmp <- eval(parse(text = lr.mods[1]))
-  }
-  all.lr.mods <- 
-  # for each model, rename columns
-  for (i in 1:length(lr.mods2)) {
-    print(i)
-    names(lr.mods2[[i]])[2:4] <- paste(names(lr.mods[[i]])[2:4], names(lr.mods)[i], sep = ".")
-  }
-  all.lr.mods <- lr.mods[1]
-  if (length(lr.mods) > 1) {
-    for (i in 2:length(lr.mods)) {
-      all.lr.mods <- merge(lr.mods, lr.mods[i], all = TRUE)
+    # get each model
+    tmp <- eval(parse(text = lr.mods[i]))
+    # if there is a model
+    if (!is.null(tmp)) {
+      num.mod <- num.mod + 1
+      # rename the variables, so they are unique
+      names(tmp)[2:4] <- paste(names(tmp)[2:4], lr.mods[i], sep = ".")
+      # if it is the first one
+      if (i == 1) {
+        all.lr.mods <- tmp
+      } else {
+        all.lr.mods <- merge(all.lr.mods, tmp, all = TRUE)
+      }
     }
   }
   # order the points
-  if (order) {
+  if (!is.null(order)) {
     if (length(order) != nrow(all.lr.mods)) stop("Different lengths in order and lr dataframe")
     all.lr.mods <- all.lr.mods[order.lr.ms,]
   }
-    
+  
   # generate the data for the barplot
-  bar.lr.mods <- rbind(all.lr.mods[grep(names(all.lr.mods), "lr")])
+  bar.lr.mods <- t(as.matrix(all.lr.mods[grep("^lr", names(all.lr.mods))]))
   
   # plot the absolute coefficients
   plt.def <- par("plt")
   on.exit(par(plt.def))
   par(plt = c(plt.def[1:2], plt, plt.def[4]))
-  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 10))
-  for (i in 1:length(lr.mods)) {
-    text(pts.x[i, ], all.lr.mods[grep(names(all.lr.mods), "lr")[i]] + 10, all.lr.mods[grep(names(all.lr.mods), "stars")[i]])
+  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 15))
+  for (i in 1:num.mod) {
+    if(!is.null(lr.mods[i])) {
+      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + 10, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]])
+    }
   }
-  legend("topright", leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
+  if (is.null(leg.txt)) {
+    leg.txt <- lr.mods[1:num.mod]
+  }
+  legend(leg.loc, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
 }
 
 
