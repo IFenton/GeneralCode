@@ -141,7 +141,7 @@ lr.calc <- function(model, EVs = NULL) {
   return(LRs)
 }
 
-lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, star.pos = 10, ...) {
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, star.pos = 10, legend = TRUE, ...) {
   # function to plot the likelihood ratios for up to four models
   # input - likelihood ratios from lr.calc (up to four)
   #       - order: a list of numbers for the order of the code
@@ -187,10 +187,12 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
       text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]])
     }
   }
-  if (is.null(leg.txt)) {
-    leg.txt <- lr.mods[1:num.mod]
+  if (legend) {
+    if (is.null(leg.txt)) {
+      leg.txt <- lr.mods[1:num.mod]
+    }
+    legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
   }
-  legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
 }
 
 
