@@ -332,6 +332,12 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
   # set up parameters so if an error occurs, still get correct parameters for next plot
   opar <- par("mfrow", "mar", "mai")
   on.exit(par(opar))
+  
+  # rescale color so that it is a more useful scale
+  if (!is.factor(color)) {
+    min.col <- min(pretty(color), na.rm = T) # use pretty to get round numbers
+    color <- color - min(pretty(color), na.rm = T)
+  }
 
   if (key) {
     par(mfrow = c(2, 1))
@@ -356,6 +362,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
       
     } else {
       # add the key
+      # if color isn't an integer
       if (sum(as.integer(color) != (color), na.rm = T) > 0) {
         # plot the world.map outline and add the points
         world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
@@ -381,7 +388,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
           spacing <- 10^(nchar(plot.col)) / 25
         }
         nam.hist[which(plot.nam %% spacing == 0)] <- round(nam[which(plot.nam %% spacing == 0)], 3 - nchar(as.integer(max(nam, na.rm = T))))
-        nam.hist <- c(0, nam.hist)        
+        nam.hist <- c(0, nam.hist) + min.col       
         
       } else {
         # plot the world.map outline and add the points
@@ -404,7 +411,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
           spacing <- 10^(nchar(plot.col)) / 20
         }
         nam.hist[which(nam %% spacing == 0)] <- nam[which(nam %% spacing == 0)]
-        if(min(color, na.rm = T) == 0) nam.hist <- c(0, nam.hist)
+        if(min(color, na.rm = T) == 0) nam.hist <- c(0, nam.hist) + min.col
       }
       axis.spacing <- c(0, 1, 0)
     }
@@ -479,6 +486,11 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
     x <- x$x
   }
   
+  # rescale color so that it is a more useful scale
+  if (!is.factor(color)) {
+    min.col <- min(pretty(color), na.rm = T) # use pretty to get round numbers
+    color <- color - min(pretty(color), na.rm = T)
+  }
   
   zlim <- range(color, finite = TRUE)
   levels <- pretty(zlim, nlevels)
@@ -541,7 +553,7 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
           spacing <- 10^(nchar(plot.col)) / 25
         }
         nam.hist[which(plot.nam %% spacing == 0)] <- round(nam[which(plot.nam %% spacing == 0)], 3 - nchar(as.integer(max(nam, na.rm = T))))
-        nam.hist<-c(0, nam.hist)        
+        nam.hist <- c(0, nam.hist) + min.col        
         
       } else {
         # plot the world.map outline and add the points
@@ -566,7 +578,7 @@ distrib.filled <- function (x, y = NULL, color = NULL, key = TRUE, palette = "lo
           spacing <- 10^(nchar(plot.col)) / 20
         }
         nam.hist[which(nam %% spacing == 0)] <- nam[which(nam %% spacing == 0)]
-        if(min(color, na.rm = T) == 0) nam.hist <- c(0,nam.hist)
+        if(min(color, na.rm = T) == 0) nam.hist <- c(0,nam.hist) + min.col
       }
       axis.spacing <- c(0, 1, 0)
     }

@@ -141,7 +141,7 @@ lr.calc <- function(model, EVs = NULL) {
   return(LRs)
 }
 
-lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.loc = "topright", ...) {
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, star.pos = 10, ...) {
   # function to plot the likelihood ratios for up to four models
   # input - likelihood ratios from lr.calc (up to four)
   #       - order: a list of numbers for the order of the code
@@ -171,7 +171,7 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   # order the points
   if (!is.null(order)) {
     if (length(order) != nrow(all.lr.mods)) stop("Different lengths in order and lr dataframe")
-    all.lr.mods <- all.lr.mods[order.lr.ms,]
+    all.lr.mods <- all.lr.mods[order,]
   }
   
   # generate the data for the barplot
@@ -181,16 +181,16 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   plt.def <- par("plt")
   on.exit(par(plt.def))
   par(plt = c(plt.def[1:2], plt, plt.def[4]))
-  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 15))
+  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 15), ...)
   for (i in 1:num.mod) {
     if(!is.null(lr.mods[i])) {
-      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + 10, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]])
+      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]])
     }
   }
   if (is.null(leg.txt)) {
     leg.txt <- lr.mods[1:num.mod]
   }
-  legend(leg.loc, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
+  legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
 }
 
 
