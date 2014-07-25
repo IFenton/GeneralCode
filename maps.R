@@ -278,41 +278,19 @@ world.map <-  function (ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, zo
 world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) 
 {
   par(mai=c(0.2,0.3,0.5,0.3))
+  # to allow colors for non-integers
   if (sum(as.integer(color) != (color), na.rm = T) > 0 && !is.factor(color)) {
     a <- nchar(as.integer(max(color, na.rm = T)))
-    
-    color <- as.integer(color * 10^(4 - a)+ 0.5)
+    plot.color <- as.integer(color * 10^(4 - a) + 0.5)
+  } else {
+    plot.color <- color
   }
-  
-  p <- which(color == 0)
-  if (!is.factor(color) && min(color, na.rm = T) == 0) {
-    px <- x[p]
-    py <- y[p]
-    x <- x[-p]
-    y <- y[-p]
-    color <- color[-p]
-  }
-  if (palette == "log.heat") {
-    points(x, y, pch = pch, col = log.heat(max(color, na.rm = T))[color], ...) 
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
-  }
-  if (palette == "heat.colors") {
-    points(x, y, pch = pch, col = heat.colors(max(color, na.rm = T))[color], ...)
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
-  }
-  if (palette == "rev.log.heat") {
-    points(x, y, pch = pch, col = rev.log.heat(max(color, na.rm = T))[color], ...)
-    if (length(p) != 0) points(px, py, pch = pch ,col = hsv(1/6, 1, 1), ...)
-  }
-  if (palette == "water.colors") {
-    points(x, y, pch = pch, col = water.colors(max(color, na.rm = T))[color], ...)
-    if (length(p) != 0) points(px, py, pch = pch, col = hsv(1, 0, 1), ...)
-  }
-  if (palette == "rainbow") {
-    points(x, y, pch = pch, col = rainbow(max(color, na.rm = T))[color], ...)
-  }
+  # change scaling so that it can handle zeros and negatives and makes the most effective use of the range
+  plot.color <- plot.color - min(plot.color, na.rm = TRUE) + 1
   if (palette == "none") {
-    points(x, y, pch = pch, col = as.integer(color), ...)
+    points(x, y, pch = pch, col = as.integer(plot.color), ...)
+  } else {
+    points(x, y, pch = pch, col = do.call(palette, list(max(plot.color, na.rm = T)))[plot.color], ...) 
   }
   par(mai = c(1.02, 0.82, 0.82, 0.42))
   par(mar = c(5.1, 4.1, 4.1, 2.1))
@@ -418,25 +396,32 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
     key<-rep(1, plot.col)
     if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) key <- c(1, key)
   
-    if (palette == "log.heat") {
-      bar.col <- log.heat(plot.col)
-      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
+#     if (palette == "log.heat") {
+#       bar.col <- log.heat(plot.col)
+#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
+#     }
+#     if (palette == "rev.log.heat") {
+#       bar.col <- rev.log.heat(plot.col)
+#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
+#     }
+#     if (palette == "heat.colors") {
+#       bar.col <- heat.colors(plot.col)
+#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
+#     }
+#     
+#     if (palette == "water.colors") {
+#       bar.col <- water.colors(plot.col)
+#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
+#     }
+#     if (palette == "rainbow") bar.col <- rainbow(plot.col)
+    if (palette == "none") {
+      bar.col <- 1:length(levels(color))
+    } else {
+      bar.col <- do.call(palette, list(plot.col))
+      # handling zero
+      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(do.call(palette, list(1000))[1], bar.col)
     }
-    if (palette == "rev.log.heat") {
-      bar.col <- rev.log.heat(plot.col)
-      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-    }
-    if (palette == "heat.colors") {
-      bar.col <- heat.colors(plot.col)
-      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-    }
-    
-    if (palette == "water.colors") {
-      bar.col <- water.colors(plot.col)
-      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
-    }
-    if (palette == "rainbow") bar.col <- rainbow(plot.col)
-    if (palette == "none") bar.col <- 1:length(levels(color))
+
     
     barplot(key, names.arg = nam.hist, main = keytitle, horiz = TRUE, space = 0, border = NA, col = bar.col,
             fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, cex.main = key.cex, font.main = 1)
