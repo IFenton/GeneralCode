@@ -278,19 +278,23 @@ world.map <-  function (ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, zo
 world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) 
 {
   par(mai=c(0.2,0.3,0.5,0.3))
-  # to allow colors for non-integers
-  if (sum(as.integer(color) != (color), na.rm = T) > 0 && !is.factor(color)) {
-    a <- nchar(as.integer(max(color, na.rm = T)))
-    plot.color <- as.integer(color * 10^(4 - a) + 0.5)
+  if (grepl("^#(\\d|[a-f]){6,8}$", color[1], ignore.case = TRUE)) {# if it is a colour
+    points(x, y, pch = pch, col = color, ...)
   } else {
-    plot.color <- color
-  }
-  # change scaling so that it can handle zeros and negatives and makes the most effective use of the range
-  plot.color <- plot.color - min(plot.color, na.rm = TRUE) + 1
-  if (palette == "none") {
-    points(x, y, pch = pch, col = as.integer(plot.color), ...)
-  } else {
-    points(x, y, pch = pch, col = do.call(palette, list(max(plot.color, na.rm = T)))[plot.color], ...) 
+    # to allow colors for non-integers
+    if (sum(as.integer(color) != (color), na.rm = T) > 0 && !is.factor(color)) {
+      a <- nchar(as.integer(max(color, na.rm = T)))
+      plot.color <- as.integer(color * 10^(4 - a) + 0.5)
+    } else {
+      plot.color <- color
+    }
+    # change scaling so that it can handle zeros and negatives and makes the most effective use of the range
+    plot.color <- plot.color - min(plot.color, na.rm = TRUE) + 1
+    if (palette == "none") {
+      points(x, y, pch = pch, col = as.integer(plot.color), ...)
+    } else {
+      points(x, y, pch = pch, col = do.call(palette, list(max(plot.color, na.rm = T)))[plot.color], ...) 
+    }
   }
   par(mai = c(1.02, 0.82, 0.82, 0.42))
   par(mar = c(5.1, 4.1, 4.1, 2.1))
@@ -303,18 +307,78 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                          col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, ...)
-{ if (shift) {
+  { 
+  if (shift) {
     x <- ifelse(x < 0, x + 360, x)
   }
-
+  
+  if (palette == "none") {
+    if (diff(range(color)) > 8) stop("To many colours: Need to specify a palette")
+    if (min(color) <= 0 ) stop("Cannot be less than zero: Need to specify a palette")
+    if (!all(as.integer(color), color)) stop("Requires integers: Need to specify a palette")
+  }
+  
   # set up parameters so if an error occurs, still get correct parameters for next plot
   opar <- par("mfrow", "mar", "mai")
   on.exit(par(opar))
   
-  # rescale color so that it is a more useful scale
-  if (!is.factor(color)) {
+  col.values <- color
+  
+  if (is.factor(color)) {
+    color <- as.numeric(color)
+  }
+  
+  if (suppressWarnings(!all(pretty(color) == sort(color)))) { # if we need to rescale to make it pretty
     min.col <- min(pretty(color), na.rm = T) # use pretty to get round numbers
-    color <- color - min(pretty(color), na.rm = T)
+    max.col <- max(pretty(color), na.rm = T)
+    
+    if (min.col != min(color)) color <- c(min.col, color) # include the minimum and maximum pretty values 
+    if (max.col != max(color)) color <- c(color, max.col)
+    color <- color - min(pretty(color), na.rm = T) + 1 # rescale so that the values are positive
+    
+    a <- nchar(as.integer(max(color, na.rm = T))) # calculate the number of digits
+    
+    # generate a color scale for the key 
+    # should be a sequence from min to max of color by regular steps
+    key.length <- as.integer((max(color, na.rm = T) - min(color, na.rm = T)) * 10^(4 - a) + 0.5) + 1 # number of steps for key sequence
+    if (palette == "none") {
+      key.colors <- as.integer(color)
+    } else {
+      key.colors <- do.call(palette, list(key.length)) # calculate those colours
+    }
+    names(key.colors) <- seq(min.col, max.col, length.out = key.length) # add names that link these colours to their values
+    if (key) {
+      # calculate the numbers for the key
+      # use those from pretty
+      key.names <- rep(NA, key.length)
+      key.names[1] <- pretty(col.values)[1] # set the bottom value
+      key.names[(1:(length(pretty(col.values)) - 1)) * (key.length - 1) / (length(pretty(col.values)) - 1) + 1] <- pretty(col.values)[-1] # set the rest of the values
+    }
+      
+    # get the colors for the plot from this scale
+    num.dec <- nchar(strsplit(as.character((max.col - min.col) / (key.length - 1)), ".", fixed=TRUE)[[1]][[2]]) # calculate number of decimal places
+    map.colors <- key.colors[match(round(col.values, num.dec), names(key.colors))] # match colors
+  } else { # if don't need pretty
+    color <- color - min(color, na.rm = T) + 1 # rescale so that the values are positive
+    if (palette == "none") {
+      key.colors <- as.integer(color)
+    } else {
+      key.colors <- do.call(palette, list(max(color)))[sort(color)] # calculate those colours
+    }
+    if (is.factor(col.values)) {
+      names(key.colors) <- levels(col.values)
+    } else {
+      names(key.colors) <- sort(col.values)
+    }
+    if (key) {
+      key.names <- names(key.colors)
+    }
+    if (palette == "none") {
+      map.colors <- as.integer(color)
+    } else {
+      map.colors <- do.call(palette, list(max(color)))[color] # match colors
+    }
+    key.length <- length(color)
   }
 
   if (key) {
@@ -332,10 +396,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
       world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
       
       par(mai = c(1, 0.25, 1, 0.85))
-      
-      plot.col <- length(levels(color))
-      nam.hist <- levels(color)
-      
+     
       axis.spacing <- c(0, 0.5, 0)
       
     } else {
@@ -347,26 +408,9 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                   fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                   ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                   xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-        world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+        world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
         
         par(mai = c(1, 0.25, 1, 0.85))
-        
-        a <- nchar(as.integer(max(color, na.rm = T)))
-        
-        plot.col <- as.integer(max(color, na.rm = T) * 10^(4 - a) + 0.5)
-        
-        nam <- seq(max(color, na.rm = T) / plot.col, max(color, na.rm = T), length.out = plot.col)
-        plot.nam <- 1:plot.col
-        nam.hist <- rep(NA, length(nam))
-        
-        # difference between less than 5 and more than 5
-        if (round(plot.col, -nchar(plot.col)) != 0) {
-          spacing <- round(plot.col, -nchar(plot.col)) / 10
-        } else {
-          spacing <- 10^(nchar(plot.col)) / 25
-        }
-        nam.hist[which(plot.nam %% spacing == 0)] <- round(nam[which(plot.nam %% spacing == 0)], 3 - nchar(as.integer(max(nam, na.rm = T))))
-        nam.hist <- c(0, nam.hist) + min.col       
         
       } else {
         # plot the world.map outline and add the points
@@ -374,56 +418,14 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                   fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                   ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                   xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-        world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+        world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
         
         par(mai = c(1, 0.25, 1, 0.85))      
-        plot.col <- max(color, na.rm = T)
-        
-        nam <- 1:plot.col
-        nam.hist <- rep(NA, length(nam))
-        
-        
-        if (round(plot.col, -nchar(plot.col)) != 0) {
-          spacing <- round(plot.col, -nchar(plot.col)) / 10
-        } else {
-          spacing <- 10^(nchar(plot.col)) / 20
-        }
-        nam.hist[which(nam %% spacing == 0)] <- nam[which(nam %% spacing == 0)]
-        if(min(color, na.rm = T) == 0) nam.hist <- c(0, nam.hist) + min.col
       }
       axis.spacing <- c(0, 1, 0)
     }
-    key<-rep(1, plot.col)
-    if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) key <- c(1, key)
-  
-#     if (palette == "log.heat") {
-#       bar.col <- log.heat(plot.col)
-#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
-#     }
-#     if (palette == "rev.log.heat") {
-#       bar.col <- rev.log.heat(plot.col)
-#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-#     }
-#     if (palette == "heat.colors") {
-#       bar.col <- heat.colors(plot.col)
-#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1/6, 1, 1), bar.col)
-#     }
-#     
-#     if (palette == "water.colors") {
-#       bar.col <- water.colors(plot.col)
-#       if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(hsv(1, 0, 1), bar.col)
-#     }
-#     if (palette == "rainbow") bar.col <- rainbow(plot.col)
-    if (palette == "none") {
-      bar.col <- 1:length(levels(color))
-    } else {
-      bar.col <- do.call(palette, list(plot.col))
-      # handling zero
-      if(!is.factor(color) && (min(color, na.rm = T) == 0 || sum(as.integer(color) != (color), na.rm = T) > 0)) bar.col <- c(do.call(palette, list(1000))[1], bar.col)
-    }
-
-    
-    barplot(key, names.arg = nam.hist, main = keytitle, horiz = TRUE, space = 0, border = NA, col = bar.col,
+    key <- rep(1, key.length)
+    barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, col = key.colors,
             fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, cex.main = key.cex, font.main = 1)
     
     par(mai = c(1.02, 0.82, 0.82, 0.42))
@@ -441,7 +443,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                 ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                 xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-      world.points(x = x, y = y, color = color, palette = palette, pch = pch, ...)
+      world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
     }
   }
 }
