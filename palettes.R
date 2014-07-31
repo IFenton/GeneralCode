@@ -11,6 +11,8 @@
 ## log.heat - palette
 ## rev.log.heat - palette
 ## water.colors - palette
+## rwb - palette
+## rwbt - palette
 
 
 ## basic colors for colorblind ---------------------------------------------
@@ -103,3 +105,24 @@ rwb <- function (n, alpha = 1) {
   else character()
 }
 
+# rwbt ---------------------------------------------------------------------
+rwbt <- function (n) {
+  if ((n <- as.integer(n[1L])) > 0) {
+    # if an even number
+    len <- n %/% 2
+    if (n %% 2 == 0) {
+      # reverse sequence from blue to white
+      col <- hsv(2/3, 1, 1, rev(seq.int(from = 1/(2 * len), to = 1 - 1/(2 * len), length.out = len)))
+      # sequence from white to red
+      col <- c(col, hsv(1, 1, 1, seq.int(from = 1/(2 * len), to = 1 - 1/(2 * len), length.out = len)))
+    } else {
+      # reverse sequence from blue to white
+      col <- hsv(2/3, 1, 1, rev(seq.int(from = 1/(2 * len), to = 1 - 1/(2 * len), length.out = len)))
+      # white in the middle
+      col <- c(col, hsv(0, 1, 1, 0))
+      # sequence from white to red
+      col <- c(col, hsv(1, 1, 1, seq.int(from = 1/(2 * len), to = 1 - 1/(2 * len), length.out = len)))
+    } 
+  }
+  else character()
+}
