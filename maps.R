@@ -306,138 +306,123 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          subtitle = "", keytitle = "", key.cex = 0.9, sub.italics = FALSE, pch = 20, 
                          ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
-                         col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, ...)
+                         col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, 
+                         min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), ...)
   { 
-  if (shift) {
-    x <- ifelse(x < 0, x + 360, x)
-  }
-  
-  if (palette == "none") {
-    if (diff(range(color)) > 8) stop("To many colours: Need to specify a palette")
-    if (min(color) <= 0 ) stop("Cannot be less than zero: Need to specify a palette")
-    if (!all(as.integer(color), color)) stop("Requires integers: Need to specify a palette")
-  }
-  
-  # set up parameters so if an error occurs, still get correct parameters for next plot
-  opar <- par("mfrow", "mar", "mai")
-  on.exit(par(opar))
-  
-  col.values <- color
-  
-  if (is.factor(color)) {
-    color <- as.numeric(color)
-  }
-  
-  if (suppressWarnings(!all(pretty(color) == sort(color)))) { # if we need to rescale to make it pretty
-    min.col <- min(pretty(color), na.rm = T) # use pretty to get round numbers
-    max.col <- max(pretty(color), na.rm = T)
+    if (is.null(color)) stop("Check color: no data")
     
-    if (min.col != min(color)) color <- c(min.col, color) # include the minimum and maximum pretty values 
-    if (max.col != max(color)) color <- c(color, max.col)
-    color <- color - min(pretty(color), na.rm = T) + 1 # rescale so that the values are positive
-    
-    a <- nchar(as.integer(max(color, na.rm = T))) # calculate the number of digits
-    
-    # generate a color scale for the key 
-    # should be a sequence from min to max of color by regular steps
-    key.length <- as.integer((max(color, na.rm = T) - min(color, na.rm = T)) * 10^(4 - a) + 0.5) + 1 # number of steps for key sequence
-    if (palette == "none") {
-      key.colors <- as.integer(color)
-    } else {
-      key.colors <- do.call(palette, list(key.length)) # calculate those colours
+    if (shift) {
+      x <- ifelse(x < 0, x + 360, x)
     }
-    names(key.colors) <- seq(min.col, max.col, length.out = key.length) # add names that link these colours to their values
-    if (key) {
-      # calculate the numbers for the key
-      # use those from pretty
-      key.names <- rep(NA, key.length)
-      key.names[1] <- pretty(col.values)[1] # set the bottom value
-      key.names[(1:(length(pretty(col.values)) - 1)) * (key.length - 1) / (length(pretty(col.values)) - 1) + 1] <- pretty(col.values)[-1] # set the rest of the values
+    
+    if (palette == "none" && !is.factor(color)) {
+      if (diff(range(color)) > 8) stop("Too many colours: Need to specify a palette")
+      if (min(color) < 1) stop("Must be greater than zero: Need to specify a palette")
+      if (!all(as.integer(color) == color)) stop("Requires integers: Need to specify a palette")
     }
+    
+    # set up parameters so if an error occurs, still get correct parameters for next plot
+    opar <- par("mfrow", "mar", "mai")
+    on.exit(par(opar))
+    
+    col.values <- color
+    
+    if (is.factor(color)) { # if the colours are factors
+      map.colors <- as.numeric(color)
       
-    # get the colors for the plot from this scale
-    num.dec <- nchar(strsplit(as.character((max.col - min.col) / (key.length - 1)), ".", fixed=TRUE)[[1]][[2]]) # calculate number of decimal places
-    map.colors <- key.colors[match(round(col.values, num.dec), names(key.colors))] # match colors
-  } else { # if don't need pretty
-    color <- color - min(color, na.rm = T) + 1 # rescale so that the values are positive
-    if (palette == "none") {
-      key.colors <- as.integer(color)
-    } else {
-      key.colors <- do.call(palette, list(max(color)))[sort(color)] # calculate those colours
-    }
-    if (is.factor(col.values)) {
-      names(key.colors) <- levels(col.values)
-    } else {
-      names(key.colors) <- sort(col.values)
-    }
-    if (key) {
-      key.names <- names(key.colors)
-    }
-    if (palette == "none") {
-      map.colors <- as.integer(color)
-    } else {
-      map.colors <- do.call(palette, list(max(color)))[color] # match colors
-    }
-    key.length <- length(color)
-  }
+      if (length(grep("^[0-9]", col.values)) > 0) stop("Factors shouldn't start with numbers")
+      
+      if (key) { # if there is a key
+        if (palette == "none") {
+          key.colors <- as.numeric(factor(levels(color)))
+        } else {
+          key.colors <- do.call(palette, list(length(levels(color))))
+        }
+        
+        key.names <- levels(color)
+        key.length <- length(key.names)
+      }
+    } else { # if not factors
+      
+      if (min.col != min(color)) color <- c(min.col, color) # include the minimum and maximum pretty values 
+      if (max.col != max(color)) color <- c(color, max.col)
+      color <- color - min.col + 1 # rescale so that the values are positive
+       
+      if (all(as.integer(color) == color) && max(color) < 50) { # if using integers, n.b. this is rescaled
+        
+        if (palette == "none") { # if palette is none
+          
+          key.colors <- min(color, na.rm = TRUE):max(color, na.rm = TRUE) # of the rescaled colours
+          names(key.colors) <- min.col:max.col
+                    
+          map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map
+          
+        } else { # if integers but palette isn't none
+          
+          key.colors <- do.call(palette, list(max(color))) # calculate those colours
+          names(key.colors) <- min.col:max.col
+          
+          map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map      
+        } 
+        
+        key.length <- length(key.colors)
+        
+      } else { # if not integers
+      
+        a <- nchar(as.integer(max(color, na.rm = T))) # calculate the number of digits
+        
+        # generate a color scale for the key 
+        # should be a sequence from min to max of color by regular steps
+        # number of steps for key sequence
+        key.length <- as.integer((max(color, na.rm = T) - min(color, na.rm = T)) * 10^(4 - a) + 0.5) + 1 
+        key.colors <- do.call(palette, list(key.length)) # calculate those colours
+        # add names that link these colours to their values
+        names(key.colors) <- seq(min.col, max.col, length.out = key.length) 
+        
+        # get the colors for the plot from this scale
+        num.dec <- nchar(strsplit(as.character((max.col - min.col) / (key.length - 1)),
+                                  ".", fixed=TRUE)[[1]][[2]]) # calculate number of decimal places
+        map.colors <- key.colors[match(round(col.values, num.dec), names(key.colors))] # match colors
+      }
+        
+      if (key) { # names for the key
 
-  if (key) {
-    par(mfrow = c(2, 1))
+        # calculate the numbers for the key; use those from pretty, but need to be able to change the range
+        key.step <- diff(pretty(col.values))[1]
+        key.values <- seq(min.col, max.col, by = key.step)
+        key.names <- rep(NA, key.length)
+        key.names[1] <- min.col # set the bottom value
+        key.names[1:(length(key.values) - 1) * (key.length - 1) / 
+                    (length(key.values) - 1) + 1] <- key.values[-1] # set the rest of the values
+      }
+      
+    }
     
-    # set up the layout for a key
-    layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
-    
-    # if factor
-    if (is.factor(color)) {
+    if (key) { # plot key
+      par(mfrow = c(2, 1))
+          
+      # set up the layout for a key
+      layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
+      
+      # plot the world.map outline and add the points
       world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
                 ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
                 xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-      world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
+      world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
       
       par(mai = c(1, 0.25, 1, 0.85))
-     
-      axis.spacing <- c(0, 0.5, 0)
       
-    } else {
-      # add the key
-      # if color isn't an integer
-      if (sum(as.integer(color) != (color), na.rm = T) > 0) {
-        # plot the world.map outline and add the points
-        world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-                  fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-                  ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-                  xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-        world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
-        
-        par(mai = c(1, 0.25, 1, 0.85))
-        
-      } else {
-        # plot the world.map outline and add the points
-        world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-                  fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-                  ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-                  xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-        world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
-        
-        par(mai = c(1, 0.25, 1, 0.85))      
-      }
       axis.spacing <- c(0, 1, 0)
-    }
-    key <- rep(1, key.length)
-    barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, col = key.colors,
-            fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, cex.main = key.cex, font.main = 1)
     
-    par(mai = c(1.02, 0.82, 0.82, 0.42))
-    par(mfrow = c(1, 1))
+      key <- rep(1, key.length)
+      barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, 
+              col = key.colors, fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, 
+              cex.main = key.cex, font.main = 1)
     
-  } else {
-    if (is.factor(color)) {
-      world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-                fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-                ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-                xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha,zones = zones, ...)
-      world.points(x = x, y = y, color = as.numeric(color), palette = palette, pch = pch, ...)
+      par(mai = c(1.02, 0.82, 0.82, 0.42))
+      par(mfrow = c(1, 1))
+    
     } else {
       world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
                 fill = fill, shift = shift, col.water = col.water, col.land = col.land,
@@ -446,7 +431,6 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
       world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
     }
   }
-}
 
 # distrib.filled ----------------------------------------------------------
 # distrib.filled
