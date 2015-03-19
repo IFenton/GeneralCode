@@ -13,10 +13,17 @@
 ## water.colors - palette
 ## rwb - palette
 ## rwbt - palette
+## rainbow2 - reversed rainbow palette from purple to red
+## gray.palette - set grey as a palette so it takes a single number
+## matlab.like palette is in library(colorRamps)
 
+library(colorRamps)
 
 ## basic colors for colorblind ---------------------------------------------
 coloring <- c("black", "red", "blue")
+
+## palette of black points
+black.pal <- function(x) rep("black", x)
 
 ## percent.col; fill a certain percentage with a given colour -------------
 ## create a function that fills a certain percentage of levels with a given color. 
@@ -82,7 +89,6 @@ water.colors <- function(n, alpha = 1) {
   else character()
 }
 
-
 # rwb ---------------------------------------------------------------------
 rwb <- function (n, alpha = 1) {
   if ((n <- as.integer(n[1L])) > 0) {
@@ -123,6 +129,22 @@ rwbt <- function (n) {
       # sequence from white to red
       col <- c(col, hsv(1, 1, 1, seq.int(from = 1/(2 * len), to = 1 - 1/(2 * len), length.out = len)))
     } 
+  }
+  else character()
+}
+
+# rainbow 2 ----------------------------------------------------------------
+rainbow2 <- function (n, s = 1, v = 1, alpha = 1) {
+  if ((n <- as.integer(n[1L])) > 0) {
+    hsv(h = seq.int(3/4, 0, length.out = n) %% 1, s, v, alpha)
+  }
+  else character()
+}
+
+# gray.palette ------------------------------------------------------------
+gray.palette <- function(n, start = 1, end = 0) {
+  if ((n <- as.integer(n[1L])) > 0) {
+    gray(seq(start, end, length.out = n))
   }
   else character()
 }
