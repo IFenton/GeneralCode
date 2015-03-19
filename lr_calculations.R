@@ -141,12 +141,13 @@ lr.calc <- function(model, EVs = NULL) {
   return(LRs)
 }
 
-lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, star.pos = 10, legend = TRUE, ...) {
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, leg.cex = 1, star.pos = 10, legend = TRUE, ylim = NULL, cex.pts = 1, srt = NULL, cex.axis = 1, ...) {
   # function to plot the likelihood ratios for up to four models
   # input - likelihood ratios from lr.calc (up to four)
   #       - order: a list of numbers for the order of the code
   #       - plt: the plot parameter for the x-axis 
   #       - leg.text: the words for the legend, otherwise defaults to the model names
+  # output - the x-coordinates of the bars
   # calculate number of comparisons
   # create a list of the models
   lr.mods <- c("lr.mod1", "lr.mod2", "lr.mod3", "lr.mod4")
@@ -181,18 +182,26 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   plt.def <- par("plt")
   on.exit(par(plt.def))
   par(plt = c(plt.def[1:2], plt, plt.def[4]))
-  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = c(0, max(bar.lr.mods, na.rm = T) + 15), ...)
+  x.axis <- "s"
+  if (!is.null(srt)) x.axis <- "n"
+  if (is.null(ylim)) ylim = c(0, max(bar.lr.mods, na.rm = T) + star.pos + 5)
+  pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = ylim, xaxt = x.axis, ...)
+  if (!is.null(srt)) {
+    text(c(pts.x[2,]), par("usr")[3] - 10, srt = srt, labels = all.lr.mods$names, adj = 1, xpd = TRUE, cex = cex.axis)
+  }
+  
   for (i in 1:num.mod) {
     if(!is.null(lr.mods[i])) {
-      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]])
+      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]], cex = cex.pts)
     }
   }
   if (legend) {
     if (is.null(leg.txt)) {
       leg.txt <- lr.mods[1:num.mod]
     }
-    legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)])
+    legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)], cex = leg.cex)
   }
+  return(pts.x)
 }
 
 
