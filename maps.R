@@ -21,7 +21,7 @@ data(world.dat)
 # world.oceancol ----------------------------------------------------------
 ## world ocean, with the ability to colour the ocean
 world.oceancol <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
-                          col.land = "darkgrey", zones = FALSE, ...) 
+                            col.land = "darkgrey", zones = FALSE, ...) 
 { library(fields)
   data(world.dat)
   
@@ -61,10 +61,10 @@ world.oceancol <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.wat
 
 # world.oceancol.contour --------------------------------------------------
 world.oceancol.contour <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90), col.water = "white",
-                                  col.land = "darkgrey", ...)
+                                    col.land = "darkgrey", ...)
 { library(fields)
   data(world.dat)
-   
+  
   land <- TRUE
   lakes <- TRUE
   ind <- (1:length(obj$x))[is.na(obj$x)]
@@ -95,7 +95,7 @@ world.oceancol.contour <- function (obj, xlim = c(-180, 180), ylim = c(-90, 90),
 # world.shiftcol ----------------------------------------------------------
 # create an colour function for the shifted world map
 world.shiftcol <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "white",
-                          col.land = "darkgrey", zones = FALSE, ...)
+                            col.land = "darkgrey", zones = FALSE, ...)
 { library(fields)
   data(world.dat)
   
@@ -158,7 +158,7 @@ world.shiftcol <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "wh
 # world.shiftcol.contour --------------------------------------------------
 # create an colour function for the shifted world map with a contour
 world.shiftcol.contour <- function (xlim = c(0, 360), ylim = c(-90, 90), col.water = "white",
-                                  col.land = "darkgrey", zones = FALSE, ...)
+                                    col.land = "darkgrey", zones = FALSE, ...)
 { library(fields)
   data(world.dat)
   
@@ -213,9 +213,9 @@ world.shiftcol.contour <- function (xlim = c(0, 360), ylim = c(-90, 90), col.wat
 # world.map ---------------------------------------------------------------
 # edit the world.map function so it can colour the shifted world map and it colours the oceans
 world.map <-  function (ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, zones = FALSE,
-                       xlab = "", ylab = "", xaxt = "n", yaxt = "n", bty="n", eps = 0.1,
-                       col = 1, shift = FALSE, fill = FALSE, col.water = "white",
-                       col.land = "darkgrey", alpha = NA, subtitle = "", sub.italics = FALSE, ...)
+                        xlab = "", ylab = "", xaxt = "n", yaxt = "n", bty="n", eps = 0.1,
+                        col = 1, shift = FALSE, fill = FALSE, col.water = "white",
+                        col.land = "darkgrey", alpha = NA, subtitle = "", sub.italics = FALSE, ...)
 {
   data(world.dat)
   par(mai = c(0.2, 0.3, 0.5, 0.3))
@@ -278,7 +278,7 @@ world.map <-  function (ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, zo
 world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...) 
 {
   par(mai=c(0.2,0.3,0.5,0.3))
-  if (grepl("^#(\\d|[a-f]){6,8}$", color[1], ignore.case = TRUE)) {# if it is a colour
+  if (grepl("^#(\\d|[a-f]){6,8}$", color[!is.na(color)][1], ignore.case = TRUE)) {# if it is a colour
     points(x, y, pch = pch, col = color, ...)
   } else {
     # to allow colors for non-integers
@@ -308,129 +308,130 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                          col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, 
                          min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), ...)
-  { 
-    if (is.null(color)) stop("Check color: no data")
-    
-    if (shift) {
-      x <- ifelse(x < 0, x + 360, x)
-    }
-    
-    if (palette == "none" && !is.factor(color)) {
-      if (diff(range(color)) > 8) stop("Too many colours: Need to specify a palette")
-      if (min(color) < 1) stop("Must be greater than zero: Need to specify a palette")
-      if (!all(as.integer(color) == color)) stop("Requires integers: Need to specify a palette")
-    }
-    
-    # set up parameters so if an error occurs, still get correct parameters for next plot
-    opar <- par("mfrow", "mar", "mai")
-    on.exit(par(opar))
-    
-    col.values <- color
-    
-    if (is.factor(color)) { # if the colours are factors
-      map.colors <- as.numeric(color)
-      
-      if (length(grep("^[0-9]", col.values)) > 0) stop("Factors shouldn't start with numbers")
-      
-      if (key) { # if there is a key
-        if (palette == "none") {
-          key.colors <- as.numeric(factor(levels(color)))
-        } else {
-          key.colors <- do.call(palette, list(length(levels(color))))
-        }
-        
-        key.names <- levels(color)
-        key.length <- length(key.names)
-      }
-    } else { # if not factors
-      
-      if (min.col != min(color)) color <- c(min.col, color) # include the minimum and maximum pretty values 
-      if (max.col != max(color)) color <- c(color, max.col)
-      color <- color - min.col + 1 # rescale so that the values are positive
-       
-      if (all(as.integer(color) == color) && max(color) < 50) { # if using integers, n.b. this is rescaled
-        
-        if (palette == "none") { # if palette is none
-          
-          key.colors <- min(color, na.rm = TRUE):max(color, na.rm = TRUE) # of the rescaled colours
-          names(key.colors) <- min.col:max.col
-                    
-          map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map
-          
-        } else { # if integers but palette isn't none
-          
-          key.colors <- do.call(palette, list(max(color))) # calculate those colours
-          names(key.colors) <- min.col:max.col
-          
-          map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map      
-        } 
-        
-        key.length <- length(key.colors)
-        
-      } else { # if not integers
-      
-        a <- nchar(as.integer(max(color, na.rm = T))) # calculate the number of digits
-        
-        # generate a color scale for the key 
-        # should be a sequence from min to max of color by regular steps
-        # number of steps for key sequence
-        key.length <- as.integer((max(color, na.rm = T) - min(color, na.rm = T)) * 10^(4 - a) + 0.5) + 1 
-        key.colors <- do.call(palette, list(key.length)) # calculate those colours
-        # add names that link these colours to their values
-        names(key.colors) <- seq(min.col, max.col, length.out = key.length) 
-        
-        # get the colors for the plot from this scale
-        num.dec <- nchar(strsplit(as.character((max.col - min.col) / (key.length - 1)),
-                                  ".", fixed=TRUE)[[1]][[2]]) # calculate number of decimal places
-        map.colors <- key.colors[match(round(col.values, num.dec), names(key.colors))] # match colors
-      }
-        
-      if (key) { # names for the key
-
-        # calculate the numbers for the key; use those from pretty, but need to be able to change the range
-        key.step <- diff(pretty(col.values))[1]
-        key.values <- seq(min.col, max.col, by = key.step)
-        key.names <- rep(NA, key.length)
-        key.names[1] <- min.col # set the bottom value
-        key.names[1:(length(key.values) - 1) * (key.length - 1) / 
-                    (length(key.values) - 1) + 1] <- key.values[-1] # set the rest of the values
-      }
-      
-    }
-    
-    if (key) { # plot key
-      par(mfrow = c(2, 1))
-          
-      # set up the layout for a key
-      layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
-      
-      # plot the world.map outline and add the points
-      world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-                fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-                ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-                xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-      world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
-      
-      par(mai = c(1, 0.25, 1, 0.85))
-      
-      axis.spacing <- c(0, 1, 0)
-    
-      key <- rep(1, key.length)
-      barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, 
-              col = key.colors, fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, 
-              cex.main = key.cex, font.main = 1)
-    
-      par(mai = c(1.02, 0.82, 0.82, 0.42))
-      par(mfrow = c(1, 1))
-    
-    } else {
-      world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
-                fill = fill, shift = shift, col.water = col.water, col.land = col.land,
-                ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
-                xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-      world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
-    }
+{ 
+  if (is.null(color)) stop("Check color: no data")
+  if(!is.factor(color)) {
+    if(max(color, na.rm = TRUE) > max.col) warning("Largest color value is greater than scale max")
+    if(min(color, na.rm = TRUE) < min.col) warning("Smallest color value is less than scale min")
   }
+  
+  if (shift) {
+    x <- ifelse(x < 0, x + 360, x)
+  }
+  
+  if (palette == "none" && !is.factor(color)) {
+    if (diff(range(color)) > 8) stop("Too many colours: Need to specify a palette")
+    if (min(color, na.rm = TRUE) < 1) stop("Must be greater than zero: Need to specify a palette")
+    if (!all(as.integer(color) == color)) stop("Requires integers: Need to specify a palette")
+  }
+  
+  # set up parameters so if an error occurs, still get correct parameters for next plot
+  opar <- par("mfrow", "mar", "mai")
+  on.exit(par(opar))
+  
+  col.values <- color
+  
+  if (is.factor(color)) { # if the colours are factors
+    map.colors <- as.numeric(color)
+    
+    if (length(grep("^[0-9]", col.values)) > 0) stop("Factors shouldn't start with numbers")
+    
+    if (key) { # if there is a key
+      if (palette == "none") {
+        key.colors <- as.numeric(factor(levels(color)))
+      } else {
+        key.colors <- do.call(palette, list(length(levels(color))))
+      }
+      
+      key.names <- levels(color)
+      key.length <- length(key.names)
+    }
+  } else { # if not factors
+    
+    if (min.col != min(color, na.rm = TRUE)) color <- c(min.col, color) # include the minimum and maximum pretty values 
+    if (max.col != max(color, na.rm = TRUE)) color <- c(color, max.col)
+    color <- color - min.col + 1 # rescale so that the values are positive
+    
+    if (all(as.integer(color) == color) && max(color, na.rm = TRUE) < 50) { # if using integers, n.b. this is rescaled
+      
+      if (palette == "none") { # if palette is none
+        
+        key.colors <- min(color, na.rm = TRUE):max(color, na.rm = TRUE) # of the rescaled colours
+        names(key.colors) <- min.col:max.col
+        
+        map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map
+        
+      } else { # if integers but palette isn't none
+        
+        key.colors <- do.call(palette, list(max(color))) # calculate those colours
+        names(key.colors) <- min.col:max.col
+        
+        map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map      
+      } 
+      
+      key.length <- length(key.colors)
+      
+    } else { # if not integers
+      
+      # generate a color scale for the key 
+      # should be a sequence from min to max of color by regular steps
+      # number of steps for key sequence
+      diff.col <- max.col - min.col
+      key.length <- (diff.col) * 10 ^ -floor(log10(diff.col)) * 1000 + 1
+      key.colors <- do.call(palette, list(key.length)) # calculate those colours
+      # add names that link these colours to their values
+      # get the colors for the plot from this scale
+      col.step <- (max.col - min.col) / (key.length - 1)
+      num.dec <- -log10(col.step)
+      names(key.colors) <- round(seq(min.col, max.col, length.out = as.integer(key.length)), num.dec)
+      
+      map.colors <- key.colors[match(round(col.values, num.dec), names(key.colors))] # match colors
+    }
+    
+    if (key) { # names for the key
+      
+      # calculate the numbers for the key; use those from pretty, but need to be able to change the range
+      key.values <- pretty(as.numeric(names(key.colors)))
+      key.values <- key.values[which(key.values >= min.col & key.values <= max.col)]
+      key.names <- rep(NA, key.length)
+      key.names[match(key.values, names(key.colors))] <- key.values
+    }
+    
+  }
+  
+  if (key) { # plot key
+    par(mfrow = c(2, 1))
+    
+    # set up the layout for a key
+    layout(matrix(c(1, 2), 1, 2, byrow = TRUE), c(5, 1), 3, TRUE)
+    
+    # plot the world.map outline and add the points
+    world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
+              fill = fill, shift = shift, col.water = col.water, col.land = col.land,
+              ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
+              xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
+    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
+    
+    par(mai = c(1, 0.25, 1, 0.85))
+    
+    axis.spacing <- c(0, 1, 0)
+    
+    key <- rep(1, key.length)
+    barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, 
+            col = key.colors, fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, 
+            cex.main = key.cex, font.main = 1)
+    
+    par(mai = c(1.02, 0.82, 0.82, 0.42))
+    par(mfrow = c(1, 1))
+    
+  } else {
+    world.map(main = maintitle, subtitle = subtitle, sub.italics = sub.italics, 
+              fill = fill, shift = shift, col.water = col.water, col.land = col.land,
+              ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
+              xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
+    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
+  }
+}
 
 # distrib.filled ----------------------------------------------------------
 # distrib.filled
