@@ -8,9 +8,9 @@
 
 ## example: sp.mat.2.df(-180:180, 89.5:-89.5, chl.mod.dat)
 
-sp.mat.2.df <- function(x, y, sp.mat) {
+sp.mat.2.df <- function(Long, Lat, sp.mat) {
   # create the initial data frame
-  dat <- as.data.frame(cbind(rep(x, each = nrow(sp.mat)), rep(y, ncol(sp.mat))))
+  dat <- as.data.frame(cbind(rep(Long, each = nrow(sp.mat)), rep(Lat, ncol(sp.mat))))
   names(dat) <- c("Long", "Lat")
   # populate the new column
   dat$val <- as.vector(sp.mat)
