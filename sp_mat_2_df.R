@@ -10,18 +10,16 @@
 
 sp.mat.2.df <- function(x, y, sp.mat) {
   # create the initial data frame
-  dat <- as.data.frame(cbind(rep(x, nrow(sp.mat)), rep(y, each = ncol(sp.mat))))
+  dat <- as.data.frame(cbind(rep(x, each = nrow(sp.mat)), rep(y, ncol(sp.mat))))
   names(dat) <- c("Long", "Lat")
   dat$val <- NA
   
   # populate the new column
-  for (i in 1:ncol(sp.mat)){
-    dat$val[seq(i, by = length(x), length.out = length(y))] <- as.numeric(sp.mat[, i])
-  }
+  dat$val <- as.vector(sp.mat)
   return(dat)
 }
 
 # # worked example
-# dat <- rbind(c(1,2,3,4,5,6,7),c(2,4,6,8,10,12,14), c(3,6,9,12,15,18,21))
-# sp.mat.2.df(1:7, 1:3, dat)
+data <- rbind(c(1,2,3,4,5,6,7),c(2,4,6,8,10,12,14), c(3,6,9,12,15,18,21))
+sp.mat.2.df(1:7, 1:3, data)
 
