@@ -12,8 +12,6 @@ sp.mat.2.df <- function(x, y, sp.mat) {
   # create the initial data frame
   dat <- as.data.frame(cbind(rep(x, each = nrow(sp.mat)), rep(y, ncol(sp.mat))))
   names(dat) <- c("Long", "Lat")
-  dat$val <- NA
-  
   # populate the new column
   dat$val <- as.vector(sp.mat)
   return(dat)
