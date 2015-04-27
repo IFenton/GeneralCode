@@ -6,6 +6,9 @@
 
 # n.b. the same set of environmental variables will give slightly different predictions when based on the original data compared with new data. This is because the former values can measure the signal as well as the trend, whereas the latter just predicts the trend. 
 
+## Errors:
+# Error in X.old %*% B : non-conformable arguments - need to remove null factor levels
+
 sar.predict <- function (object, newdata = NULL, olddata = NULL, listw = NULL, zero.policy = NULL, 
           legacy = TRUE, power = NULL, order = 250, tol = .Machine$double.eps^(3/5), 
           ...) # add term for olddata
