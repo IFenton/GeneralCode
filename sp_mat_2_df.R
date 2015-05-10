@@ -13,7 +13,7 @@ sp.mat.2.df <- function(Long, Lat, sp.mat) {
   dat <- as.data.frame(cbind(rep(Long, each = nrow(sp.mat)), rep(Lat, ncol(sp.mat))))
   names(dat) <- c("Long", "Lat")
   # populate the new column
-  dat$val <- as.vector(sp.mat)
+  dat$val <- as.vector(as.matrix(sp.mat))
   return(dat)
 }
 
