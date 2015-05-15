@@ -52,10 +52,13 @@ model.evs <- function(model) {
 }
 
 
-lr.calc <- function(model, EVs = NULL) {
+lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data = NULL, file.nm = as.character(model)) {
   # function to calculate likelihood ratios
   # input  - model: the model to work from
   #        - EVs: dataframe of variables, and the groups they are in (optional, otherwise calculated from model)
+  #        - plots: if TRUE then produce plots by ocean of the predicted values
+  #        - pred.data: the dataframe for predicting
+  #        - mod.data: the dataframe on which the original model was run
   # output - dataframe containing variables, p values and significance stars
   
   # obtain a list of variables
@@ -70,6 +73,12 @@ lr.calc <- function(model, EVs = NULL) {
     if(ncol(EVs) != 2) stop ("Expecting 2 columns")
     if(length(unique(EVs[, 1])) < length(unique(EVs[, 2]))) stop ("Order should be name, then group")
     colnames(EVs) <- c("name", "group")
+  }
+  
+  # if plots, then get predicted values from the main model
+  if (plots) {
+    mod.p <- sar.predict(model, olddata = mod.data, newdata = pred.data)
+    m <- 1
   }
   
   # generate a dataframe to store these values
@@ -131,6 +140,39 @@ lr.calc <- function(model, EVs = NULL) {
     # obtain the LR and P-value
     LRs$lr[LRs$names == i] <- lrtest(model, tmp.mod)$Chisq[2]
     LRs$p[LRs$names == i] <- lrtest(model, tmp.mod)$Pr[2]
+    
+    browser()
+    if (plots) {
+      tmp.mod.p <- sar.predict(tmp.mod, olddata = mod.data, newdata = pred.data)
+      # if groups
+      if (sum(EVs$name != EVs$group) == 0) {
+        # extract variable name if it is a poly variable
+        if (length(grep("poly", i) > 0)) {
+          var <- gsub(",.*", "", gsub(".*\\(", "", i))
+          m <- m + 1
+        } else {
+          var <- i
+        }
+        png(paste("Figures/",file.nm, "_", var, "_", m, ".png", sep = ""))
+        with(pred.data, plot(pred.data[, var], mod.p - tmp.mod.p, col = pred.data[, grep("Ocean", names(pred.data))], xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l"))
+        dev.off()
+      } else {
+        k <- 1
+        for (j in EVs$name[EVs$group == i]) {
+          if (length(grep("poly", j) > 0)) {
+            var <- gsub(",.*", "", gsub(".*\\(", "", j))
+            m <- m + 1
+          } else {
+            var <- j
+          }
+          png(paste("Figures/",file.nm, "_", var, "_", m, ".png", sep = ""))
+          with(pred.data, plot(pred.data[, var], mod.p - tmp.mod.p, col = pred.data[, grep("Ocean", names(pred.data))], xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l", main = paste(i, k, sep = ": ")))
+          dev.off()
+          k <- k + 1
+        }
+      }
+    }
+    
   }
   # calculate significance stars
   stars <- c(0.001, 0.01, 0.05, 0.1)
