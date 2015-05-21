@@ -48,6 +48,23 @@ model.evs <- function(model) {
     # add the poly values
     EVs <- c(EVs, full.poly)
   }
+  
+  # repeat for those with I()
+  if (length(grep("I(", names(model$coefficients), fixed = TRUE)) > 0) {
+    # identify where I( is present and it's not an interaction
+    Ib.ev <- names(model$coefficients)[setdiff(grep("I(", names(model$coefficients), fixed = TRUE), grep(":", names(model$coefficients), fixed = TRUE))]
+    
+    tmp.Ib <- NULL
+    # identify EVs without the I() from that list (uni.Ib)
+    for (i in Ib.ev){
+      tmp.Ib <- c(tmp.Ib, names(unlist(sapply(EVs, grep, i, fixed = TRUE))))
+    }
+    uni.Ib <- unique(tmp.Ib)
+    # remove those EVs which are Ib from the total EV list
+    EVs <- setdiff(EVs, uni.Ib)
+    # add the Ib values
+    EVs <- c(EVs, Ib.ev)
+  }
   return(EVs)
 }
 
@@ -141,7 +158,6 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
     LRs$lr[LRs$names == i] <- lrtest(model, tmp.mod)$Chisq[2]
     LRs$p[LRs$names == i] <- lrtest(model, tmp.mod)$Pr[2]
     
-    browser()
     if (plots) {
       tmp.mod.p <- sar.predict(tmp.mod, olddata = mod.data, newdata = pred.data)
       # if groups
