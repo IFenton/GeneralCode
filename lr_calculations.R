@@ -1,4 +1,5 @@
-## 30 / 5 / 2014
+## File created: 30 / 5 / 2014
+## Last updated: 6 / 6 / 2015
 ## Isabel Fenton
 ## Likelihood ratio plots
 ##
@@ -163,9 +164,11 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
       # if groups
       if (sum(EVs$name != EVs$group) == 0) {
         # extract variable name if it is a poly variable
-        if (length(grep("poly", i) > 0)) {
+        if (length(grep("poly", i)) > 0) {
           var <- gsub(",.*", "", gsub(".*\\(", "", i))
           m <- m + 1
+        } else if (length(grep("I(", i, fixed = TRUE)) > 0) {
+          var <- gsub("/.*", "", gsub(".*\\(", "", i))
         } else {
           var <- i
         }
@@ -199,7 +202,7 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
   return(LRs)
 }
 
-lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, leg.cex = 1, star.pos = 10, legend = TRUE, ylim = NULL, cex.pts = 1, srt = NULL, cex.axis = 1, ...) {
+lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, order = NULL, plt = 0.4, leg.txt = NULL, leg.x = "topright", leg.y = NULL, leg.cex = 1, star.pos = 10, legend = TRUE, ylim = NULL, cex.pts = 1, srt = NULL, cex.axis = 1, se.val = NULL, ...) {
   # function to plot the likelihood ratios for up to four models
   # input - likelihood ratios from lr.calc (up to four)
   #       - order: a list of numbers for the order of the code
@@ -242,15 +245,40 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   par(plt = c(plt.def[1:2], plt, plt.def[4]))
   x.axis <- "s"
   if (!is.null(srt)) x.axis <- "n"
-  if (is.null(ylim)) ylim = c(0, max(bar.lr.mods, na.rm = T) + star.pos + 5)
+  if (is.null(ylim)) {
+    if (is.null(se.val)) {
+      ylim <- c(0, max(bar.lr.mods, na.rm = T) + star.pos + 5)
+    } else {
+      ylim.max <- which(bar.lr.mods == max(bar.lr.mods, na.rm = T))
+      ylim <- c(0, bar.lr.mods[ylim.max] + star.pos + 5 + se.val[order][ylim.max])  
+    }    
+  }
   pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = ylim, xaxt = x.axis, ...)
   if (!is.null(srt)) {
     text(c(pts.x[2,]), par("usr")[3] - 10, srt = srt, labels = all.lr.mods$names, adj = 1, xpd = TRUE, cex = cex.axis)
   }
-  
+  star.se <- 0
+  if (!is.null(se.val)) {
+    # error bar function
+    error.bars <- function(xv, yv, z) {
+      g <- (max(xv) - min(xv)) / 50
+      for (i in 1:length(xv)) {
+        lines(c(xv[i], xv[i]), c(yv[i] + z[i], yv[i] - z[i]))
+        lines(c(xv[i] - g, xv[i] + g), c(yv[i] + z[i], yv[i] + z[i]))
+        lines(c(xv[i] - g, xv[i] + g), c(yv[i] - z[i], yv[i] - z[i]))
+      }
+    }
+    # add them to the plot
+    for (i in 1:num.mod) {
+      if(!is.null(lr.mods[i])) {
+        error.bars(pts.x[i, ], bar.lr.mods, se.val[order])
+      }
+    }
+    star.se <- se.val[order]
+  }
   for (i in 1:num.mod) {
     if(!is.null(lr.mods[i])) {
-      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]], cex = cex.pts)
+      text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos + star.se, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]], cex = cex.pts)
     }
   }
   if (legend) {
@@ -259,6 +287,7 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
     }
     legend(leg.x, leg.y, leg.txt, fill = gray.colors(length(lr.mods))[1:length(lr.mods)], cex = leg.cex)
   }
+  
   return(pts.x)
 }
 
