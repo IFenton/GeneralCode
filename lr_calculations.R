@@ -286,10 +286,14 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
     # add them to the plot
     error.bars(pts.x, bar.lr.mods, se.val)
     
-    star.se <- se.val
   }
   for (i in 1:num.mod) {
     if(!is.null(lr.mods[i])) {
+      if (!is.null(dim(se.val))) {
+        star.se <- se.val[i, ]
+      } else {
+        star.se <- se.val[i]
+      }
       text(pts.x[i, ], all.lr.mods[, grep("^lr", names(all.lr.mods))[i]] + star.pos + star.se, all.lr.mods[, grep("^stars", names(all.lr.mods))[i]], cex = cex.pts)
     }
   }
