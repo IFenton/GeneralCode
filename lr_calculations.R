@@ -230,10 +230,25 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
       }
     }
   }
-  # order the points
+  # make sure order of se and of lr values are the same when multiple models are present
+  if (!is.null(se.val)) {
+    if(!is.null(dim(se.val))) {
+      se.val <- se.val[, as.character(all.lr.mods$names)]
+    }
+  }
+  
+  # order the points, if order is present
   if (!is.null(order)) {
     if (length(order) != nrow(all.lr.mods)) stop("Different lengths in order and lr dataframe")
     all.lr.mods <- all.lr.mods[order,]
+    if(!is.null(se.val)) {
+      if (is.null(dim(se.val))) {
+        se.val <- se.val[order]
+      } else {
+        se.val <- se.val[, order]
+      }
+    }
+     
   }
   
   # generate the data for the barplot
@@ -250,7 +265,7 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
       ylim <- c(0, max(bar.lr.mods, na.rm = T) + star.pos + 5)
     } else {
       ylim.max <- which(bar.lr.mods == max(bar.lr.mods, na.rm = T))
-      ylim <- c(0, bar.lr.mods[ylim.max] + star.pos + 5 + se.val[order][ylim.max])  
+      ylim <- c(0, bar.lr.mods[ylim.max] + star.pos + 5 + se.val[ylim.max])  
     }    
   }
   pts.x <- barplot(bar.lr.mods, names = all.lr.mods$names, beside = T, las = 2, ylim = ylim, xaxt = x.axis, ...)
@@ -261,7 +276,7 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
   if (!is.null(se.val)) {
     # error bar function
     error.bars <- function(xv, yv, z) {
-      g <- (max(xv) - min(xv)) / 50
+      g <- (pts.x[2] - pts.x[1]) * 0.2
       for (i in 1:length(xv)) {
         lines(c(xv[i], xv[i]), c(yv[i] + z[i], yv[i] - z[i]))
         lines(c(xv[i] - g, xv[i] + g), c(yv[i] + z[i], yv[i] + z[i]))
@@ -269,12 +284,9 @@ lr.plot <- function(lr.mod1, lr.mod2 = NULL, lr.mod3 = NULL, lr.mod4 = NULL, ord
       }
     }
     # add them to the plot
-    for (i in 1:num.mod) {
-      if(!is.null(lr.mods[i])) {
-        error.bars(pts.x[i, ], bar.lr.mods, se.val[order])
-      }
-    }
-    star.se <- se.val[order]
+    error.bars(pts.x, bar.lr.mods, se.val)
+    
+    star.se <- se.val
   }
   for (i in 1:num.mod) {
     if(!is.null(lr.mods[i])) {
