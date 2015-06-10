@@ -25,6 +25,12 @@ coloring <- c("black", "red", "blue")
 ## palette of black points
 black.pal <- function(x) rep("black", x)
 
+## get hex
+GetColorHex <- function(color) {
+  c <- col2rgb(color)
+  sprintf("#%02X%02X%02X", c[1],c[2],c[3], c[1], c[2], c[3])
+}
+
 ## percent.col; fill a certain percentage with a given colour -------------
 ## create a function that fills a certain percentage of levels with a given color. 
 ## created for Andy to colour gyres
