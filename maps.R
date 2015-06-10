@@ -285,13 +285,19 @@ world.points <- function(x, y, color, palette = "log.heat", pch = 20, ...)
     if (sum(as.integer(color) != (color), na.rm = T) > 0 && !is.factor(color)) {
       a <- nchar(as.integer(max(color, na.rm = T)))
       plot.color <- as.integer(color * 10^(4 - a) + 0.5)
+    } else if (length(grep("#", palette)) != 0) {
+      plot.color <- palette[color]
     } else {
       plot.color <- color
     }
     # change scaling so that it can handle zeros and negatives and makes the most effective use of the range
-    plot.color <- plot.color - min(plot.color, na.rm = TRUE) + 1
+    if (length(grep("#", palette)) == 0) {
+      plot.color <- plot.color - min(plot.color, na.rm = TRUE) + 1
+    }
     if (palette == "none") {
       points(x, y, pch = pch, col = as.integer(plot.color), ...)
+    } else if (length(grep("#", palette)) != 0) {
+      points(x, y, pch = pch, col = plot.color, ...)
     } else {
       points(x, y, pch = pch, col = do.call(palette, list(max(plot.color, na.rm = T)))[plot.color], ...) 
     }
@@ -339,6 +345,8 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
     if (key) { # if there is a key
       if (palette == "none") {
         key.colors <- as.numeric(factor(levels(color)))
+      } else if (length(grep("#", palette)) != 0) {
+        key.colors <- palette[as.numeric(factor(levels(color)))]
       } else {
         key.colors <- do.call(palette, list(length(levels(color))))
       }
@@ -361,6 +369,13 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
         
         map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map
         
+      } else if (length(grep("#", palette)) != 0) {
+        
+        key.colors <- min(color, na.rm = TRUE):max(color, na.rm = TRUE) # of the rescaled colours
+        names(key.colors) <- min.col:max.col
+        
+        map.colors <- key.colors[match(col.values, names(key.colors))] # match colors for the map
+              
       } else { # if integers but palette isn't none
         
         key.colors <- do.call(palette, list(max(color))) # calculate those colours
