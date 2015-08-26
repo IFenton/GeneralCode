@@ -7,10 +7,10 @@
 
 compare<-function (forams.sample) {
   # load lookup tables
-  forams.tracey<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/traceystax.csv")
-  aze.species<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/Traceysspecies.csv")
-  forams.lookup<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/foramslookup.csv")
-  lookup.species<-read.csv("C:/Documents/Science/PhD/Project/Foraminifera/Data/lookupwodup.csv")
+  forams.tracey<-read.csv("C:/Users/isabf/Dropbox/Documents/PhD/Project/Foraminifera/Data/traceystax.csv")
+  aze.species<-read.csv("C:/Users/isabf/Dropbox/Documents/PhD/Project/Foraminifera/Data/Traceysspecies.csv")
+  forams.lookup<-read.csv("C:/Users/isabf/Dropbox/Documents/PhD/Project/Foraminifera/Data/foramslookup.csv")
+  lookup.species<-read.csv("C:/Users/isabf/Dropbox/Documents/PhD/Project/Foraminifera/Data/lookupwodup.csv")
   
   # create the matching function
   unitestfun<-function (sample,forams,lookup) {
