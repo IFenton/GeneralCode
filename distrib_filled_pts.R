@@ -7,7 +7,7 @@
 ## filled.points 
 ## distrib.filled.pts - distrib.filled with the capability to add points
 
-source("C:\\Documents\\Science\\PhD\\Code\\maps.R")
+source("C:/Users/isabf/Dropbox/Documents/PhD/Code/maps.R")
 
 # distrib.filled.pts ------------------------------------------------------
 distrib.filled.pts <- function (xc, yc, colc, x1, y1, palette = "log.heat", pal.cutoff = 0.1, 
