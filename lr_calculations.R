@@ -1,5 +1,5 @@
 ## File created: 30 / 5 / 2014
-## Last updated: 6 / 6 / 2015
+## Last updated: 15 / 7 / 2015
 ## Isabel Fenton
 ## Likelihood ratio plots
 ##
@@ -15,6 +15,7 @@
 ##        n.b. can't handle log()
 
 library(lmtest)
+library(scales)
 
 model.evs <- function(model) {
   # function to get the list of variables from a model, including poly
@@ -70,7 +71,7 @@ model.evs <- function(model) {
 }
 
 
-lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data = NULL, file.nm = as.character(model)) {
+lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data = NULL, file.nm = as.character(model), multiple.oce = TRUE) {
   # function to calculate likelihood ratios
   # input  - model: the model to work from
   #        - EVs: dataframe of variables, and the groups they are in (optional, otherwise calculated from model)
@@ -160,6 +161,10 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
     LRs$p[LRs$names == i] <- lrtest(model, tmp.mod)$Pr[2]
     
     if (plots) {
+      # set the choice of colors
+      color <- c("gray50", "springgreen3", "orchid3")
+      ifelse(i == "prop2.oxy", span <- 1, span <- 0.75)
+      
       tmp.mod.p <- sar.predict(tmp.mod, olddata = mod.data, newdata = pred.data)
       # if groups
       if (sum(EVs$name != EVs$group) == 0) {
@@ -172,8 +177,31 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
         } else {
           var <- i
         }
+        if (!is.factor(pred.data[, var]) & multiple.oce){
+          if (min(pred.data[, var]) != max(pred.data[, var])) {
+            # create a vector containing values for each ocean
+            p.data <- data.frame(p.x = rep(seq(min(pred.data[, var]), max(pred.data[, var]), length.out = 100), 3), p.oce = rep(levels(pred.data[, grep("Ocean", names(pred.data))]), each = 100), p.y = NA)
+            # for each of the oceans, run a loess and predict the values
+            for (l in 1:3) {
+              tmp.val <- which(pred.data[, grep("Ocean", names(pred.data))] == levels(pred.data[, grep("Ocean", names(pred.data))])[l])
+              # need to set the span for data where there are limited x values
+              lo <- loess((mod.p - tmp.mod.p)[tmp.val] ~ pred.data[tmp.val, var], span = span)
+              p.data$p.y[(1:100) + 100 * (l - 1)] <- predict(lo, newdata = p.data$p.x[(1:100) + 100 * (l - 1)])
+            }
+          }
+        }
+        # randomise to plot better
+        samp <- sample(1:nrow(pred.data), nrow(pred.data))
+        # plot these results
         png(paste("Figures/",file.nm, "_", var, "_", m, ".png", sep = ""))
-        with(pred.data, plot(pred.data[, var], mod.p - tmp.mod.p, col = pred.data[, grep("Ocean", names(pred.data))], xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l"))
+        with(pred.data[samp, ], plot(pred.data[samp, var], mod.p[samp] - tmp.mod.p[samp], col = alpha(color[pred.data[samp, grep("Ocean", names(pred.data))]], 0.5), xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l", las = 1, cex.lab = 1.2, cex.axis = 1.2))
+        if (!is.factor(pred.data[, var]) & multiple.oce){
+          if (min(pred.data[, var]) != max(pred.data[, var])) {
+            with(p.data[1:100, ], lines(p.x, p.y, col = "black", lwd = 2))
+            with(p.data[101:200, ], lines(p.x, p.y, col = "green4", lwd = 2))
+            with(p.data[201:300, ], lines(p.x, p.y, col = "magenta4", lwd = 2))
+          }
+        }
         dev.off()
       } else {
         k <- 1
@@ -184,8 +212,31 @@ lr.calc <- function(model, EVs = NULL, plots = FALSE, pred.data = NULL, mod.data
           } else {
             var <- j
           }
+          if (!is.factor(pred.data[, var]) & multiple.oce){
+            if (min(pred.data[, var]) != max(pred.data[, var])) {
+              # create a vector containing values for each ocean
+              p.data <- data.frame(p.x = rep(seq(min(pred.data[, var]), max(pred.data[, var]), length.out = 100), 3), p.oce = rep(levels(pred.data[, grep("Ocean", names(pred.data))]), each = 100), p.y = NA)
+              # for each of the oceans, run a loess and predict the values
+              for (l in 1:3) {
+                tmp.val <- which(pred.data[, grep("Ocean", names(pred.data))] == levels(pred.data[, grep("Ocean", names(pred.data))])[l])
+                # need to set the span for data where there are limited x values
+                lo <- loess((mod.p - tmp.mod.p)[tmp.val] ~ pred.data[tmp.val, var], span = span)
+                p.data$p.y[(1:100) + 100 * (l - 1)] <- predict(lo, newdata = p.data$p.x[(1:100) + 100 * (l - 1)])
+              }
+            }
+          }
+          # randomise to plot better
+          samp <- sample(1:nrow(pred.data), nrow(pred.data))
+          # plot these results
           png(paste("Figures/",file.nm, "_", var, "_", m, ".png", sep = ""))
-          with(pred.data, plot(pred.data[, var], mod.p - tmp.mod.p, col = pred.data[, grep("Ocean", names(pred.data))], xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l", main = paste(i, k, sep = ": ")))
+          with(pred.data[samp, ], plot(pred.data[samp, var], mod.p[samp] - tmp.mod.p[samp], col = alpha(color[pred.data[samp, grep("Ocean", names(pred.data))]], 0.5), xlab = var, ylab = paste("Relative", eval(model$call[2][[1]])[2][[1]]), bty = "l", las = 1, cex.lab = 1.2, cex.axis = 1.2, main = paste(i, k, sep = ": ")))
+          if (!is.factor(pred.data[, var]) & multiple.oce){
+            if (min(pred.data[, var]) != max(pred.data[, var])) {
+              with(p.data[1:100, ], lines(p.x, p.y, col = "black", lwd = 2))
+              with(p.data[101:200, ], lines(p.x, p.y, col = "green4", lwd = 2))
+              with(p.data[201:300, ], lines(p.x, p.y, col = "magenta4", lwd = 2))
+            }
+          }
           dev.off()
           k <- k + 1
         }
