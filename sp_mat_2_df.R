@@ -17,6 +17,8 @@ sp.mat.2.df <- function(Long, Lat, sp.mat) {
   return(dat)
 }
 
+# you can also use stack
+
 # worked example
 data <- rbind(c(1,2,3,4,5,6,7), c(2,4,6,8,10,12,14), c(3,6,9,12,15,18,21))
 sp.mat.2.df(1:7, 1:3, data)
