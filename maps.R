@@ -313,7 +313,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                          col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, 
-                         min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), ...)
+                         min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), cex.key.names = 0.8, ...)
 { 
   if (is.null(color)) stop("Check color: no data")
   if(!is.factor(color)) {
@@ -441,7 +441,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
     
     key <- rep(1, key.length)
     barplot(key, names.arg = key.names, main = keytitle, horiz = TRUE, space = 0, border = NA, 
-            col = key.colors, fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = 0.8, 
+            col = key.colors, fg = "white", las = 1, mgp = axis.spacing, xaxt = "n", cex.names = cex.key.names, 
             cex.main = key.cex, font.main = 1)
     
     par(mai = c(1.02, 0.82, 0.82, 0.42))
