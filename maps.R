@@ -313,7 +313,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
                          ylim = c(-90, 90), xlim = NULL, add = FALSE, asp = 1, xlab = "", ylab = "", 
                          xaxt = "n", yaxt = "n", bty = "n", eps = 0.1, col = 1, fill = TRUE, 
                          col.water = "steelblue2", col.land = "green4", alpha = NA, zones = FALSE, 
-                         min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), cex.key.names = 0.8, ...)
+                         min.col = min(pretty(color), na.rm = T), max.col = max(pretty(color), na.rm = T), cex.key.names = 0.8, cex = 1, ...)
 { 
   if (is.null(color)) stop("Check color: no data")
   if(!is.factor(color)) {
@@ -433,7 +433,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
               fill = fill, shift = shift, col.water = col.water, col.land = col.land,
               ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
               xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
+    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, cex = cex, ...)
     
     par(mai = c(1, 0.25, 1, 0.85))
     
@@ -452,7 +452,7 @@ distrib.map <- function (x, y, color, key = TRUE, palette = "log.heat", shift = 
               fill = fill, shift = shift, col.water = col.water, col.land = col.land,
               ylim = ylim, xlim = xlim, add = add, asp = asp, xlab = xlab, ylab = ylab, 
               xaxt = xaxt, yaxt = yaxt, bty = bty, eps = eps, col = col, alpha = alpha, zones = zones, ...)
-    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, ...)
+    world.points(x = x, y = y, color = map.colors, palette = palette, pch = pch, cex = cex, ...)
   }
 }
 
