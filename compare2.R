@@ -8,12 +8,13 @@
 compare <- function (forams.sample, micro = FALSE) {
   # load lookup tables
   library("openxlsx")
-  forams.tracy <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "tracystax")
-  aze.species <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "Tracysspecies")
-  forams.lookup <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "foramslookup")
-  lookup.species <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "lookupwodup")
-  forams.lookup.micro <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "foramslookup_micro")
-  lookup.species.micro <- read.xlsx("C:/Users/eart0475/Documents/IF Dropbox/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx", sheet = "lookupwodup_micro")
+  path <- gsub("/[^/]*(Box|Dropbox).*/.*$", "", getwd())
+  forams.tracy <- read.xlsx(paste0(path, "/", grep("ropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "tracystax")
+  aze.species <- read.xlsx(paste0(path, "/", grep("dropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "Tracysspecies")
+  forams.lookup <- read.xlsx(paste0(path, "/", grep("dropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "foramslookup")
+  lookup.species <- read.xlsx(paste0(path, "/", grep("dropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "lookupwodup")
+  forams.lookup.micro <- read.xlsx(paste0(path, "/", grep("dropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "foramslookup_micro")
+  lookup.species.micro <- read.xlsx(paste0(path, "/", grep("dropbox", list.files(path), value = TRUE, ignore.case = TRUE), "/Documents/PhD/Project/Foraminifera/Data/ForamSynonyms.xlsx"), sheet = "lookupwodup_micro")
   
   # create the matching function
   unitestfun <- function (sample, forams, lookup) {
