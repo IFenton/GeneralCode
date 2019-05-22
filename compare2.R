@@ -35,7 +35,7 @@ compare <- function (forams.sample, micro = FALSE, st.age = NA, en.age = NA, age
     abb.nm <- rbind(abb.nm, tmp)
     # remove the first name (genus)
     abb.nm$Synonym <- gsub("^(.)[^ ]* ", "\\1\\. ", abb.nm$Synonym)
-    # remove duplicates from mispelled genus 
+    # remove duplicates from mispelled genus, where the accepted name is the same
     abb.nm <- abb.nm[!duplicated(abb.nm[,1:2]),]
     # where there are still duplicates, set these as "Unsure"
     abb.dup <- abb.nm$Synonym[duplicated(abb.nm$Synonym) & abb.nm$AcceptedName != "Unsure"]
