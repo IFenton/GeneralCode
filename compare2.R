@@ -67,7 +67,7 @@ compare <- function (forams.sample, micro = FALSE, st.age = NA, en.age = NA, age
   species.list <- sapply(forams.sample, comp.func, full.lookup, USE.NAMES = FALSE) 
   
   # add in a check for "Unsure" based on ages of everything else
-  if (!is.na(st.age[1]) | age.check) {
+  if ((!is.na(st.age[1]) | age.check) & any(species.list == "Unsure")) {
     # calculate max / min ages
     if (is.na(st.age[1])) {
       # if these aren't already specified, then base it on the species list
