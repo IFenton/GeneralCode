@@ -86,7 +86,7 @@ compare <- function (forams.sample, micro = FALSE, st.age = NA, en.age = NA, age
       age.full.lookup$AcceptedName[age.full.lookup$Micro == "Yes"] <- "Micro"
     }
     
-    species.list[species.list == "Unsure"] <- sapply(forams.sample[species.list == "Unsure"], comp.func, age.full.lookup, USE.NAMES = FALSE)
+    species.list[species.list == "Unsure"] <- ifelse(sapply(forams.sample[species.list == "Unsure"], comp.func, age.full.lookup, USE.NAMES = FALSE) == "unknown", "Unsure", sapply(forams.sample[species.list == "Unsure"], comp.func, age.full.lookup, USE.NAMES = FALSE))
   }
   return(species.list)
 }
