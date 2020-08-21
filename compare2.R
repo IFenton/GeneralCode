@@ -64,6 +64,7 @@ compare <- function (forams.sample, micro = FALSE, st.age = NA, en.age = NA, age
     return(species)
   }
   
+  forams.sample <- gsub("\\s", " ", forams.sample)
   species.list <- sapply(forams.sample, comp.func, full.lookup, USE.NAMES = FALSE) 
   
   # add in a check for "Unsure" based on ages of everything else
